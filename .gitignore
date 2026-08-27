@@ -1,2 +1,5 @@
 oauth_creds.json
 google_accounts.json
+history/
+config/sidecars/
+config/projects
