@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp",
+        "--api-key",
+        "ctx7sk-d676f8a8-7320-4c9f-8492-da71a6c87efd"
+      ]
+    },
+    "podman-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "podman-mcp-server@latest"
+      ]
+    }
+  }
+}
