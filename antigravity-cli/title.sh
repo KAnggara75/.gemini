@@ -1,17 +1,24 @@
 #!/bin/bash
-set -euo pipefail
 
-# Read JSON payload from stdin
-DATA=$(cat)
+CACHE_FILE="/tmp/tmux_agent_state.json"
 
-# Extract fields using jq
-eval $(echo "$DATA" | jq -r '
-  "STATE=\"\(.agent_state // "idle")\"
-   CWD=\"\(.workspace.current_dir // "")\"
-  "
-' 2>/dev/null || echo 'STATE="idle" CWD=""')
+# Jika ada data yang dipipa ke stdin, simpan ke cache file
+if [ ! -t 0 ]; then
+  cat > "$CACHE_FILE"
+fi
 
-# Try to extract CitC workspace name from CWD
+# Pastikan default JSON valid jika file belum ada
+if [ ! -f "$CACHE_FILE" ] || [ ! -s "$CACHE_FILE" ]; then
+  echo '{"agent_state": "idle", "workspace": {"current_dir": ""}}' > "$CACHE_FILE"
+fi
+
+DATA=$(cat "$CACHE_FILE" 2>/dev/null || echo '{}')
+
+# Parsing JSON menggunakan jq secara aman
+STATE=$(echo "$DATA" | jq -r '.agent_state // "idle"' 2>/dev/null || echo "idle")
+CWD=$(echo "$DATA" | jq -r '.workspace.current_dir // ""' 2>/dev/null || echo "")
+
+# Ekstraksi nama workspace
 if [ -n "$CWD" ]; then
   if [[ "$CWD" =~ /google/src/cloud/[^/]+/([^/]+) ]]; then
     WORKSPACE="${BASH_REMATCH[1]}"
@@ -19,10 +26,10 @@ if [ -n "$CWD" ]; then
     WORKSPACE=$(basename "$CWD")
   fi
 else
-  WORKSPACE="unknown"
+  WORKSPACE="none"
 fi
 
-# Map state to emoji
+# Mapping emoji
 case "$STATE" in
   initializing) EMOJI="🚀" ;;
   idle)         EMOJI="😴" ;;
@@ -32,6 +39,4 @@ case "$STATE" in
   *)            EMOJI="🤖" ;;
 esac
 
-TITLE="$EMOJI $STATE | $WORKSPACE"
-
-echo "$TITLE"
+echo "$EMOJI $STATE | $WORKSPACE"
