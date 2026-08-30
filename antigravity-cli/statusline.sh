@@ -30,6 +30,15 @@ FG_BRIGHT_WHITE="\033[97m"
 NUM_COLOR="${FG_BRIGHT_WHITE}${B}"
 
 # ─── Parse JSON from stdin (Single jq pass for performance) ──────────────────
+INPUT_JSON=$(cat)
+
+# Save state for tmux status bar
+CLEAN_ID=$(echo "${TMUX_PANE:-global}" | tr -cd '[:alnum:]')
+if [ -n "$INPUT_JSON" ]; then
+  echo "$INPUT_JSON" > "/tmp/tmux_agent_state_${CLEAN_ID}.json" 2>/dev/null || true
+  echo "$INPUT_JSON" > "/tmp/tmux_agent_state_global.json" 2>/dev/null || true
+fi
+
 # Extract all fields in one pass to prevent spawning jq 8 times.
 {
   read -r STATE
@@ -43,7 +52,7 @@ NUM_COLOR="${FG_BRIGHT_WHITE}${B}"
   read -r MODEL
   read -r COLS
 } <<< "$(
-  jq -r '
+  echo "$INPUT_JSON" | jq -r '
     (.agent_state // "idle"),
     (.context_window.used_percentage // 0),
     (.vcs.branch // ""),
