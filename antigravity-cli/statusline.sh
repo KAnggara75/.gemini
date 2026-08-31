@@ -1,13 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
-# ─── ANSI Helpers (Standard 16-color palette only) ───────────────────────────
-R="\033[0m"         # Reset
-B="\033[1m"         # Bold
-D="\033[2m"         # Dim
-I="\033[3m"         # Italic
+# ─── ANSI Helpers (Standard 16-color palette) ─────────────────────────────────
+R="\033[0m"
+B="\033[1m"
+D="\033[2m"
+I="\033[3m"
 
-# Foreground accents (Standard 16 colors)
 FG_BLACK="\033[30m"
 FG_RED="\033[31m"
 FG_GREEN="\033[32m"
@@ -26,23 +25,36 @@ FG_BRIGHT_MAGENTA="\033[95m"
 FG_BRIGHT_CYAN="\033[96m"
 FG_BRIGHT_WHITE="\033[97m"
 
-# Number Highlight Color
 NUM_COLOR="${FG_BRIGHT_WHITE}${B}"
 
-# ─── Parse JSON from stdin (Single jq pass for performance) ──────────────────
+# ─── Parse JSON from stdin ───────────────────────────────────────────────────
 INPUT_JSON=$(cat)
 
-# Save state for tmux status bar
 CLEAN_ID=$(echo "${TMUX_PANE:-global}" | tr -cd '[:alnum:]')
 if [ -n "$INPUT_JSON" ]; then
   echo "$INPUT_JSON" > "/tmp/tmux_agent_state_${CLEAN_ID}.json" 2>/dev/null || true
   echo "$INPUT_JSON" > "/tmp/tmux_agent_state_global.json" 2>/dev/null || true
 fi
 
-# Extract all fields in one pass to prevent spawning jq 8 times.
+# Helper function untuk format angka k/M
+format_tokens() {
+  local num=$1
+  if [ -z "$num" ] || [ "$num" = "null" ] || [ "$num" -eq 0 ] 2>/dev/null; then
+    echo "0"
+  elif [ "$num" -ge 1000000 ]; then
+    printf "%.1fM" "$(echo "scale=1; $num/1000000" | bc -l 2>/dev/null || awk "BEGIN {printf \"%.1f\", $num/1000000}")"
+  elif [ "$num" -ge 1000 ]; then
+    printf "%.1fk" "$(echo "scale=1; $num/1000" | bc -l 2>/dev/null || awk "BEGIN {printf \"%.1f\", $num/1000}")"
+  else
+    echo "$num"
+  fi
+}
+
 {
   read -r STATE
   read -r USED_PCT
+  read -r USED_TOKENS
+  read -r TOTAL_TOKENS
   read -r VCS_BRANCH
   read -r VCS_DIRTY
   read -r SANDBOX
@@ -55,6 +67,8 @@ fi
   echo "$INPUT_JSON" | jq -r '
     (.agent_state // "idle"),
     (.context_window.used_percentage // 0),
+    (.context_window.used_tokens // 0),
+    (.context_window.total_tokens // 0),
     (.vcs.branch // ""),
     (.vcs.dirty // false),
     (.sandbox.enabled // false),
@@ -63,20 +77,20 @@ fi
     (.task_count // 0),
     (.model.display_name // ""),
     (.terminal_width // 80)
-  ' 2>/dev/null || printf "idle\n0\n\nfalse\nfalse\n0\n0\n0\n\n80\n"
+  ' 2>/dev/null || printf "idle\n0\n0\n0\n\nfalse\nfalse\n0\n0\n0\n\n80\n"
 )"
 
 # ─── Computed Values ─────────────────────────────────────────────────────────
-# Use LC_NUMERIC=C to prevent bash printf errors in locales that use commas for decimals
 PCT_FMT=$(LC_NUMERIC=C printf "%.1f" "$USED_PCT")
 PCT_INT=${USED_PCT%.*}; PCT_INT=${PCT_INT:-0}
 
-# ─── State Indicator (No background colors) ──────────────────────────────────
+# ─── State Indicator ─────────────────────────────────────────────────────────
 case "$STATE" in
   idle)     S="${FG_BRIGHT_GREEN}${B}● READY${R}" ;;
   thinking) S="${FG_BRIGHT_YELLOW}${B}◆ THINKING${R}" ;;
   working)  S="${FG_BRIGHT_CYAN}${B}⚙ WORKING${R}" ;;
   tool_use) S="${FG_BRIGHT_MAGENTA}${B}🔧 TOOL${R}" ;;
+  error)    S="${FG_BRIGHT_RED}${B}✖ ERROR${R}" ;;
   *)        S="${FG_WHITE}${B}⏳ $(echo "$STATE" | tr '[:lower:]' '[:upper:]')${R}" ;;
 esac
 
@@ -84,40 +98,38 @@ esac
 V=""
 if [ -n "$VCS_BRANCH" ]; then
   if [ "$VCS_DIRTY" = "true" ]; then
-    V="${FG_GRAY} ╱ ${FG_BRIGHT_RED}${VCS_BRANCH}${FG_BRIGHT_YELLOW}*${R}"
+    V="${FG_GRAY} ╱ ${FG_BRIGHT_RED} ${VCS_BRANCH}${FG_BRIGHT_YELLOW}*${R}"
   else
-    V="${FG_GRAY} ╱ ${FG_BRIGHT_BLUE}${VCS_BRANCH}${R}"
+    V="${FG_GRAY} ╱ ${FG_BRIGHT_BLUE} ${VCS_BRANCH}${R}"
   fi
 fi
 
 # ─── Model ───────────────────────────────────────────────────────────────────
 M=""
 if [ -n "$MODEL" ]; then
-  M="${FG_GRAY} ╱ ${FG_BRIGHT_MAGENTA}${I}${MODEL}${R}"
+  M="${FG_GRAY} ╱ ${FG_BRIGHT_MAGENTA}${MODEL}${R}"
 fi
 
 # ─── Sandbox Badge ───────────────────────────────────────────────────────────
 if [ "$SANDBOX" = "true" ]; then
-  SB="${FG_GRAY}sandbox ${FG_BRIGHT_GREEN}${B}ON${R}"
+  SB="${FG_BRIGHT_GREEN}🛡️ on${R}"
 else
-  SB="${FG_GRAY}sandbox off${R}"
+  SB="${FG_GRAY}🛡️ off${R}"
 fi
 
-# ─── Context Bar (15 segments, fine-grain Unicode) ────────────────────────────
-BAR_LEN=15
+# ─── Context Bar (10 segments) ───────────────────────────────────────────────
+BAR_LEN=10
 FILLED=$((PCT_INT * BAR_LEN / 100))
 REMAINDER=$(( (PCT_INT * BAR_LEN) % 100 ))
 
-# Pick color based on percentage
-if [ "$PCT_INT" -ge 90 ]; then
+if [ "$PCT_INT" -ge 85 ]; then
   BAR_COLOR="$FG_BRIGHT_RED"
 elif [ "$PCT_INT" -ge 60 ]; then
   BAR_COLOR="$FG_BRIGHT_YELLOW"
 else
-  BAR_COLOR="$FG_BRIGHT_WHITE"
+  BAR_COLOR="$FG_BRIGHT_GREEN"
 fi
 
-# Build bar with partial-fill last block
 BAR=""
 for ((i = 0; i < BAR_LEN; i++)); do
   if [ "$i" -lt "$FILLED" ]; then
@@ -137,28 +149,49 @@ for ((i = 0; i < BAR_LEN; i++)); do
   fi
 done
 
-# ─── Stats ───────────────────────────────────────────────────────────────────
-CTX="${FG_GRAY}ctx ${BAR_COLOR}${BAR} ${NUM_COLOR}${PCT_FMT}%${R}"
-ART_FMT="${FG_GRAY}artifacts ${NUM_COLOR}${ARTIFACTS}${R}"
-SUB_FMT="${FG_GRAY}subagents ${NUM_COLOR}${SUBAGENTS}${R}"
-BG_FMT="${FG_GRAY}tasks ${NUM_COLOR}${BG_TASKS}${R}"
+# Token count string (jika tersedia di payload)
+TOKEN_INFO=""
+if [ "$TOTAL_TOKENS" -gt 0 ] 2>/dev/null; then
+  USED_STR=$(format_tokens "$USED_TOKENS")
+  TOTAL_STR=$(format_tokens "$TOTAL_TOKENS")
+  TOKEN_INFO=" ${FG_GRAY}(${USED_STR}/${TOTAL_STR})${R}"
+fi
+
+CTX="${FG_GRAY}ctx ${BAR_COLOR}${BAR} ${NUM_COLOR}${PCT_FMT}%${R}${TOKEN_INFO}"
+
+# ─── Dynamic Highlight Stats ─────────────────────────────────────────────────
+# Memberi highlight hanya ketika count > 0 agar fokus ke aktivitas penting
+if [ "$ARTIFACTS" -gt 0 ] 2>/dev/null; then
+  ART_FMT="${FG_CYAN}📦 ${NUM_COLOR}${ARTIFACTS}${R}"
+else
+  ART_FMT="${FG_GRAY}📦 0${R}"
+fi
+
+if [ "$SUBAGENTS" -gt 0 ] 2>/dev/null; then
+  SUB_FMT="${FG_BRIGHT_YELLOW}🤖 ${NUM_COLOR}${SUBAGENTS}${R}"
+else
+  SUB_FMT="${FG_GRAY}🤖 0${R}"
+fi
+
+if [ "$BG_TASKS" -gt 0 ] 2>/dev/null; then
+  BG_FMT="${FG_BRIGHT_GREEN}⚡ ${NUM_COLOR}${BG_TASKS}${R}"
+else
+  BG_FMT="${FG_GRAY}⚡ 0${R}"
+fi
 
 # ─── Separators ──────────────────────────────────────────────────────────────
 DOT="${FG_GRAY} · ${R}"
 
-# ─── Output ──────────────────────────────────────────────────────────────────
+# ─── Output Layout ───────────────────────────────────────────────────────────
 LINE1="${S}${M}${V}"
-LINE2=" ${CTX}${DOT}${ART_FMT}${DOT}${SUB_FMT}${DOT}${BG_FMT}${DOT}${SB}"
+LINE2="${CTX}${DOT}${ART_FMT}${DOT}${SUB_FMT}${DOT}${BG_FMT}${DOT}${SB}"
 
 if [ "$COLS" -ge 120 ]; then
-  # Wide: single line
-  echo -e "${LINE1}${FG_GRAY}  │  ${R}${LINE2}"
+  echo -e "${LINE1}  ${FG_GRAY}│${R}  ${LINE2}"
 elif [ "$COLS" -ge 80 ]; then
-  # Medium: two-line layout with border
   echo -e "${FG_GRAY}╭─${R} ${LINE1}"
-  echo -e "${FG_GRAY}╰─${R}${LINE2}"
+  echo -e "${FG_GRAY}╰─${R} ${LINE2}"
 else
-  # Narrow: compact two-line, minimal chrome
   echo -e "${S}${M}"
   echo -e "${CTX}${DOT}${BG_FMT}"
 fi
