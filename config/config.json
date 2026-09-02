@@ -2,35 +2,9 @@
   "userSettings": {
     "conversationWidth": "CONVERSATION_WIDTH_WIDE",
     "globalPermissionGrants": {
-      "allow": [
-        "unsandboxed(gh)",
-        "unsandboxed(go test -v ./...)",
-        "unsandboxed(git checkout)",
-        "unsandboxed(git status)",
-        "unsandboxed(git add)",
-        "unsandboxed(git push -u origin feature/periodic-pull-interval)",
-        "unsandboxed(git remote)",
-        "unsandboxed(git fetch)",
-        "unsandboxed(git log)",
-        "unsandboxed(git merge)",
-        "unsandboxed(git rebase)",
-        "unsandboxed(git pull)",
-        "unsandboxed(git branch)",
-        "unsandboxed(git diff)",
-        "unsandboxed(git commit)",
-        "unsandboxed(git push origin main)",
-        "unsandboxed(git reset HEAD~1)",
-        "unsandboxed(go test ./... -coverprofile=coverage.out)",
-        "unsandboxed(go tool cover -func=coverage.out)",
-        "unsandboxed(go test -v ./internal/repository)",
-        "unsandboxed(go test -v ./internal/worker)",
-        "unsandboxed(go test ./internal/worker -coverprofile=coverage.out)",
-        "unsandboxed(go test ./internal/repository -coverprofile=coverage.out)",
-        "unsandboxed(go test -v ./internal/service)",
-        "unsandboxed(go test ./internal/service -coverprofile=coverage.out)"
-      ]
+      "allow": []
     },
-    "remoteControlHostname": "kanggara-local-astral-dust",
+    "remoteControlHostname": "",
     "themeMode": "THEME_MODE_DARK",
     "useAiCredits": true
   }
