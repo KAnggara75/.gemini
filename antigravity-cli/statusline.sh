@@ -27,13 +27,17 @@ FG_BRIGHT_WHITE="\033[97m"
 
 NUM_COLOR="${FG_BRIGHT_WHITE}${B}"
 
-# ─── Parse JSON from stdin ───────────────────────────────────────────────────
-INPUT_JSON=$(cat)
-
+# ─── Handle Direct Cleanup Argument ───────────────────────────────────────────
 CLEAN_ID=$(echo "${TMUX_PANE:-global}" | tr -cd '[:alnum:]')
-if [ -n "$INPUT_JSON" ]; then
-  echo "$INPUT_JSON" > "/tmp/tmux_agent_state_${CLEAN_ID}.json" 2>/dev/null || true
-  echo "$INPUT_JSON" > "/tmp/tmux_agent_state_global.json" 2>/dev/null || true
+if [ $# -gt 0 ] && [[ "${1:-}" =~ ^(exit|quit|stop|clean|cleanup|shutdown)$ ]]; then
+  rm -f "/tmp/tmux_agent_state_${CLEAN_ID}.json" "/tmp/tmux_agent_state_global.json" 2>/dev/null || true
+  exit 0
+fi
+
+# ─── Parse JSON from stdin ───────────────────────────────────────────────────
+INPUT_JSON=$(cat 2>/dev/null || true)
+if [ -z "$INPUT_JSON" ]; then
+  exit 0
 fi
 
 # Helper function untuk format angka k/M
@@ -85,6 +89,16 @@ format_tokens() {
     (.terminal_width // 80)
   ' 2>/dev/null || printf "idle\n0\n0\n0\n\nfalse\nfalse\n0\n0\n0\n\n\n\n\n80\n"
 )"
+
+# ─── Check Exit State or Save Cache ──────────────────────────────────────────
+STATE_LOWER=$(echo "$STATE" | tr '[:upper:]' '[:lower:]')
+if [[ "$STATE_LOWER" =~ ^(exit|exited|quit|stopped|terminated|closed|shutdown|offline|done|end|killed)$ ]]; then
+  rm -f "/tmp/tmux_agent_state_${CLEAN_ID}.json" "/tmp/tmux_agent_state_global.json" 2>/dev/null || true
+  exit 0
+fi
+
+echo "$INPUT_JSON" > "/tmp/tmux_agent_state_${CLEAN_ID}.json" 2>/dev/null || true
+echo "$INPUT_JSON" > "/tmp/tmux_agent_state_global.json" 2>/dev/null || true
 
 # ─── Computed Values ─────────────────────────────────────────────────────────
 PCT_FMT=$(LC_NUMERIC=C printf "%.1f" "$USED_PCT")
