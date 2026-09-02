@@ -26,10 +26,11 @@
       "command": "bunx",
       "args": [
         "-y",
-        "@modelcontextprotocol/server-memory",
-        "--file",
-        "/Users/i/work/KAnggara75/.gemini/memory.json"
-      ]
+        "@modelcontextprotocol/server-memory"
+      ],
+      "env": {
+        "MEMORY_FILE_PATH": "/Users/i/work/KAnggara75/.gemini/memory.json"
+      }
     },
     "filesystem": {
       "command": "bunx",
