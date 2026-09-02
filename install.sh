@@ -67,9 +67,14 @@ if [ ! -e "${TARGET_DIR}/skills" ] && [ ! -L "${TARGET_DIR}/skills" ]; then
   echo "  [LINKED] ${TARGET_DIR}/skills -> ${AGENTS_SKILLS_DIR}"
 fi
 
-# Link skills/kanggara to ~/.agents/skills/kanggara
-if [ -d "${REPO_DIR}/skills/kanggara" ]; then
-  link_file "${REPO_DIR}/skills/kanggara" "${AGENTS_SKILLS_DIR}/kanggara"
+# Link all skill directories in skills/ to ~/.agents/skills/
+if [ -d "${REPO_DIR}/skills" ]; then
+  for skill_dir in "${REPO_DIR}/skills"/*; do
+    if [ -d "${skill_dir}" ]; then
+      skill_name="$(basename "${skill_dir}")"
+      link_file "${skill_dir}" "${AGENTS_SKILLS_DIR}/${skill_name}"
+    fi
+  done
 fi
 
 echo
