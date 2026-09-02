@@ -3,3 +3,6 @@ google_accounts.json
 history/
 config/sidecars/
 config/projects
+mcp.log
+history.jsonl
+memory.json
