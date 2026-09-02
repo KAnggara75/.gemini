@@ -1,24 +1,24 @@
 ---
 name: ka-git-commit
-description: "Generates high-quality, structured Conventional Commit messages by analyzing git diffs, extracting ticket/issue IDs from branch names, optimizing token usage with RTK and stat-first inspection, and offering atomic commit splits for multi-concern changes. Use when crafting commit messages, reviewing staged changes before commit, or preparing atomic commits."
+description: "Generates high-quality, structured Conventional Commit messages by analyzing git diffs, extracting ticket/issue IDs from branch names, prioritizing granular file-by-file (1 per 1) atomic commits by default, and optimizing token usage with RTK and stat-first inspection. Use when crafting commit messages, reviewing staged changes, or preparing atomic commits."
 user-invocable: true
 license: MIT
 compatibility: Designed for Antigravity AI, Claude Code, and git-based repositories.
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
 allowed-tools: Bash(git:*) Bash(rtk:*) Read Grep Glob
 ---
 
 # Generate Conventional Commit Message
 
-Specialized runbook for crafting precise, production-grade Conventional Commit messages adhering to Conventional Commits 1.0.0, Git best practices, and token-efficient diff inspection.
+Specialized runbook for crafting precise, production-grade Conventional Commit messages adhering to Conventional Commits 1.0.0, Git best practices, token-efficient diff inspection, and **file-by-file (1 per 1) atomic commit prioritization**.
 
 ## Core Objectives
-1. **Accurate Diff Analysis**: Inspect staged changes (or unstaged when nothing is staged) efficiently without exhausting token budgets.
-2. **Intelligent Ticket & Scope Extraction**: Parse ticket keys (Jira, Linear, GitHub Issues) from branch names and determine concise subsystem scopes.
-3. **Semantic Classification**: Choose the exact Conventional Commit type (`feat`, `fix`, `refactor`, `perf`, `docs`, `style`, `test`, `build`, `ci`, `chore`, `revert`).
-4. **Atomic Commit Awareness**: Detect mixed concerns and propose split atomic commits with exact `git add` sequences when applicable.
-5. **Ready-to-Execute CLI Snippets**: Provide both formatted drafts and copy-pasteable/executable git CLI commands.
+1. **File-by-File & Atomic Commit First**: Selalu utamakan memecah perubahan menjadi commit per file (1 per 1) atau unit perubahan terkecil yang mandiri, agar riwayat commit bersih, mudah di-review, dan mudah di-revert.
+2. **Accurate Diff Analysis**: Inspect staged changes (or unstaged when nothing is staged) efficiently without exhausting token budgets.
+3. **Intelligent Ticket & Scope Extraction**: Parse ticket keys (Jira, Linear, GitHub Issues) from branch names and determine concise subsystem scopes.
+4. **Semantic Classification**: Choose the exact Conventional Commit type (`feat`, `fix`, `refactor`, `perf`, `docs`, `style`, `test`, `build`, `ci`, `chore`, `revert`).
+5. **Ready-to-Execute CLI Snippets**: Provide sequential, copy-pasteable git CLI commands per file/atomic unit.
 
 ---
 
@@ -47,18 +47,15 @@ Always prioritize token efficiency. Utilize RTK if available (`rtk git ...`).
 3. **Stat-First & Token Protection**:
    - Run `git diff --stat` (or `git diff --cached --stat`) first to assess volume and changed file paths.
    - For lockfiles (`package-lock.json`, `pnpm-lock.yaml`, `Cargo.lock`, `go.sum`, `yarn.lock`) or auto-generated files (minified bundles, sourcemaps), do NOT dump full line diffs. Summarize them as dependency/lockfile updates.
-   - For large diffs (>300 lines or >10 files), inspect hunks per subsystem or file-by-file rather than dumping entire diffs.
+   - For large diffs (>300 lines or >10 files), inspect hunks file-by-file rather than dumping entire diffs.
 
-### Step 3: Semantic Analysis & Multi-Concern Detection
+### Step 3: Granular Analysis & Per-File Splitting (Utamakan 1 per 1)
 
-Analyze changes along three dimensions:
-- **Primary Intent**: Why was this change made? (Fixing a regression, adding a capability, refactoring architecture, updating CI?)
-- **Scope**: What submodule or component is affected? (e.g. `auth`, `cli`, `mcp`, `ui`, `db`, `config`, `deps`).
-- **Breaking Changes**: Does this alter public APIs, interfaces, configurations, or database schemas in a backward-incompatible way? (Mark with `!` after scope and `BREAKING CHANGE:` footer).
-
-#### Multi-Concern Check (Atomic Commit Splitting)
-If changes span multiple unrelated concerns (e.g., refactoring a database query + updating dependencies + fixing a UI style bug):
-- **Recommend Atomic Splits**: Present separate commit drafts for each logical unit along with the specific files to stage.
+Analyze changes for each file individually:
+- **Primary Rule**: Buat commit terpisah untuk setiap file yang diubah (`1 file = 1 commit`).
+- **Exception (Tightly Coupled)**: Hanya gabungkan beberapa file jika perubahan antar-file tersebut benar-benar saling bergantung erat (misal: implementasi fungsi dan unit test-nya, atau file kode dan type declaration-nya).
+- **Scope**: Tentukan scope spesifik berdasarkan path file atau modul yang disentuh (misal: `install`, `gitignore`, `mcp`, `auth`).
+- **Semantic Type**: Tentukan tipe yang akurat per file (`feat`, `fix`, `refactor`, `chore`, `docs`, `style`, `test`, `build`, `ci`).
 
 ---
 
@@ -69,9 +66,6 @@ If changes span multiple unrelated concerns (e.g., refactoring a database query 
 <type>(<scope>): [<TICKET_ID>] <imperative subject summary>
 
 [optional body: motivation and context]
-
-- <component/file>: <concise description of key update>
-- <component/file>: <concise description of key update>
 
 [optional footer: BREAKING CHANGE, Closes #123, Co-authored-by]
 ```
@@ -99,7 +93,6 @@ If changes span multiple unrelated concerns (e.g., refactoring a database query 
 
 ### 4. Body & Footers
 - Explain **WHY** the change is needed and **WHAT** problem it solves.
-- Use bullet points for specific file/component breakdowns.
 - Format breaking changes:
   ```text
   BREAKING CHANGE: The `getUser()` API now returns a Result type instead of throwing.
@@ -110,40 +103,35 @@ If changes span multiple unrelated concerns (e.g., refactoring a database query 
 
 ## Output Template & Modes
 
-Always output clean markdown formatted drafts followed by copy-pasteable CLI commands.
+Selalu utamakan penyajian **Mode A: File-by-File Atomic Commits (1 per 1)** secara default, lalu sertakan **Mode B: Single Combined Commit** hanya sebagai opsi alternatif.
 
-### Mode A: Single Commit (Standard)
-```text
-<type>(<optional-scope>): [<TICKET-ID>] <imperative subject>
+### Mode A: File-by-File Atomic Commits (Utamakan / Default)
+Sajikan draf commit dan perintah eksekusi terpisah secara berurutan untuk setiap file:
 
-<1-2 sentences summarizing context/motivation>
-
-- <file/subsystem>: <detail>
-- <file/subsystem>: <detail>
-
-[Closes #123 / BREAKING CHANGE: ...]
-```
-
-**Git Command Snippet**:
+#### Commit 1: `<file_path_1>`
 ```bash
+git add <file_path_1>
 git commit -m "<type>(<scope>): [<TICKET-ID>] <imperative subject>" \
-  -m "<1-2 sentences summarizing context/motivation>
-
-- <file/subsystem>: <detail>
-- <file/subsystem>: <detail>"
+  -m "<1-2 kalimat konteks dan motivasi perubahan file ini>"
 ```
 
-### Mode B: Atomic Commit Split (Multi-Concern)
-When changes contain distinct logical units:
-
-#### Commit 1: <Focus 1>
+#### Commit 2: `<file_path_2>`
 ```bash
-git add <files-for-part-1>
-git commit -m "<type>(<scope>): [<TICKET-ID>] <subject 1>"
+git add <file_path_2>
+git commit -m "<type>(<scope>): [<TICKET-ID>] <imperative subject>" \
+  -m "<1-2 kalimat konteks dan motivasi perubahan file ini>"
 ```
 
-#### Commit 2: <Focus 2>
+---
+
+### Mode B: Single Combined Commit (Alternatif / Tightly Coupled)
+Hanya jika pengguna secara eksplisit meminta commit gabungan atau perubahan benar-benar tidak dapat dipisahkan:
+
 ```bash
-git add <files-for-part-2>
-git commit -m "<type>(<scope>): [<TICKET-ID>] <subject 2>"
+git add <all_files>
+git commit -m "<type>(<scope>): [<TICKET-ID>] <imperative subject>" \
+  -m "<ringkasan motivasi>
+
+- <file1>: <detail>
+- <file2>: <detail>"
 ```
