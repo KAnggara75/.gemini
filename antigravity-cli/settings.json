@@ -1,0 +1,18 @@
+{
+  "model": "Gemini 3.7 Flash (Low)",
+  "permissions": {
+    "allow": []
+  },
+  "runningLightSpeed": "fast",
+  "statusLine": {
+    "type": "command",
+    "command": "~/.gemini/antigravity-cli/statusline.sh"
+  },
+  "title": {
+    "type": "command",
+    "command": "~/.gemini/antigravity-cli/title.sh",
+    "enabled": true
+  },
+  "trustedWorkspaces": [],
+  "useG1Credits": true
+}
