@@ -13,9 +13,8 @@ echo
 # Ensure base target directories exist
 mkdir -p "${TARGET_DIR}/antigravity-cli"
 mkdir -p "${TARGET_DIR}/hooks"
-mkdir -p "${TARGET_DIR}/config"
 
-# Helper function to link files safely
+# Helper function to link files and directories safely
 link_file() {
   local src="$1"
   local dest="$2"
@@ -33,13 +32,13 @@ link_file() {
   echo "  [LINKED] ${dest} -> ${src}"
 }
 
-echo "[1/4] Linking CLI scripts..."
+echo "[1/5] Linking CLI scripts..."
 link_file "${REPO_DIR}/antigravity-cli/statusline.sh" "${TARGET_DIR}/antigravity-cli/statusline.sh"
 link_file "${REPO_DIR}/antigravity-cli/title.sh" "${TARGET_DIR}/antigravity-cli/title.sh"
 chmod +x "${REPO_DIR}/antigravity-cli/statusline.sh" "${REPO_DIR}/antigravity-cli/title.sh"
 
 echo
-echo "[2/4] Linking hooks..."
+echo "[2/5] Linking hooks..."
 if [ -d "${REPO_DIR}/hooks" ]; then
   for hook_file in "${REPO_DIR}/hooks"/*; do
     if [ -f "${hook_file}" ]; then
@@ -51,7 +50,8 @@ if [ -d "${REPO_DIR}/hooks" ]; then
 fi
 
 echo
-echo "[3/5] Linking root configs..."
+echo "[3/5] Linking config folder & root configs..."
+link_file "${REPO_DIR}/config" "${TARGET_DIR}/config"
 link_file "${REPO_DIR}/settings.json" "${TARGET_DIR}/settings.json"
 link_file "${REPO_DIR}/GEMINI.md" "${TARGET_DIR}/GEMINI.md"
 
@@ -74,13 +74,10 @@ fi
 
 echo
 echo "[5/5] Setting up local symlinks & git skip-worktree..."
-# Ensure local repo configs point to target ~/.gemini/ configs if they exist
-for cfg in "antigravity-cli/settings.json" "config/config.json" "config/mcp_config.json"; do
-  if [ -f "${TARGET_DIR}/${cfg}" ] && [ ! -L "${REPO_DIR}/${cfg}" ]; then
-    ln -sf "${TARGET_DIR}/${cfg}" "${REPO_DIR}/${cfg}"
-    echo "  [LINKED] ${REPO_DIR}/${cfg} -> ${TARGET_DIR}/${cfg}"
-  fi
-done
+# Ensure local repo settings.json points to target ~/.gemini/antigravity-cli/settings.json if it exists
+if [ -f "${TARGET_DIR}/antigravity-cli/settings.json" ] && [ ! -L "${REPO_DIR}/antigravity-cli/settings.json" ]; then
+  ln -sf "${TARGET_DIR}/antigravity-cli/settings.json" "${REPO_DIR}/antigravity-cli/settings.json"
+fi
 
 # Protect against accidental local leaks
 if git -C "${REPO_DIR}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
