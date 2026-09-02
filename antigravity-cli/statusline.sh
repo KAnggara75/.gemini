@@ -105,14 +105,14 @@ C=""
 NAME_TO_SHOW=""
 if [ -n "$CONV_TITLE" ] && ! [[ "$CONV_TITLE" =~ ^[0-9a-fA-F-]{36}$ ]]; then
   NAME_TO_SHOW="$CONV_TITLE"
-elif [ -n "$WS_DIR" ]; then
-  NAME_TO_SHOW=$(basename "$WS_DIR")
 elif [ -n "$CONV_ID" ]; then
   if [[ "$CONV_ID" =~ ^[0-9a-fA-F-]{36}$ ]]; then
     NAME_TO_SHOW="${CONV_ID:0:8}"
   else
     NAME_TO_SHOW="$CONV_ID"
   fi
+elif [ -n "$WS_DIR" ]; then
+  NAME_TO_SHOW=$(basename "$WS_DIR")
 fi
 
 if [ -n "$NAME_TO_SHOW" ]; then
