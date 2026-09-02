@@ -103,16 +103,41 @@ esac
 # ─── Conversation / Session ──────────────────────────────────────────────────
 C=""
 NAME_TO_SHOW=""
+
+# 1. Cek judul langsung dari JSON payload
 if [ -n "$CONV_TITLE" ] && ! [[ "$CONV_TITLE" =~ ^[0-9a-fA-F-]{36}$ ]]; then
   NAME_TO_SHOW="$CONV_TITLE"
-elif [ -n "$CONV_ID" ]; then
+fi
+
+# 2. Ambil title percakapan dari SQLite database Antigravity
+if [ -z "$NAME_TO_SHOW" ] && [ -n "$CONV_ID" ]; then
+  DB_PATHS=(
+    "${HOME}/.gemini/antigravity-cli/conversation_summaries.db"
+    "${HOME}/.gemini/antigravity/conversation_summaries.db"
+  )
+  for db in "${DB_PATHS[@]}"; do
+    if [ -f "$db" ]; then
+      DB_TITLE=$(sqlite3 "$db" "SELECT title FROM conversation_summaries WHERE conversation_id = '$CONV_ID' LIMIT 1;" 2>/dev/null || true)
+      if [ -n "$DB_TITLE" ]; then
+        NAME_TO_SHOW="$DB_TITLE"
+        break
+      fi
+    fi
+  done
+fi
+
+# 3. Fallback ke nama folder workspace (misal: .gemini)
+if [ -z "$NAME_TO_SHOW" ] && [ -n "$WS_DIR" ]; then
+  NAME_TO_SHOW=$(basename "$WS_DIR")
+fi
+
+# 4. Fallback ke short UUID
+if [ -z "$NAME_TO_SHOW" ] && [ -n "$CONV_ID" ]; then
   if [[ "$CONV_ID" =~ ^[0-9a-fA-F-]{36}$ ]]; then
     NAME_TO_SHOW="${CONV_ID:0:8}"
   else
     NAME_TO_SHOW="$CONV_ID"
   fi
-elif [ -n "$WS_DIR" ]; then
-  NAME_TO_SHOW=$(basename "$WS_DIR")
 fi
 
 if [ -n "$NAME_TO_SHOW" ]; then
