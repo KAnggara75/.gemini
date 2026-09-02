@@ -126,12 +126,6 @@ if [ -z "$NAME_TO_SHOW" ] && [ -n "$CONV_ID" ]; then
   done
 fi
 
-# 3. Fallback ke nama folder workspace (misal: .gemini)
-if [ -z "$NAME_TO_SHOW" ] && [ -n "$WS_DIR" ]; then
-  NAME_TO_SHOW=$(basename "$WS_DIR")
-fi
-
-# 4. Fallback ke short UUID
 if [ -z "$NAME_TO_SHOW" ] && [ -n "$CONV_ID" ]; then
   if [[ "$CONV_ID" =~ ^[0-9a-fA-F-]{36}$ ]]; then
     NAME_TO_SHOW="${CONV_ID:0:8}"
