@@ -62,6 +62,9 @@ format_tokens() {
   read -r SUBAGENTS
   read -r BG_TASKS
   read -r MODEL
+  read -r CONV_TITLE
+  read -r CONV_ID
+  read -r WS_DIR
   read -r COLS
 } <<< "$(
   echo "$INPUT_JSON" | jq -r '
@@ -76,8 +79,11 @@ format_tokens() {
     (if .subagents | type == "array" then (.subagents | length) else 0 end),
     (.task_count // 0),
     (.model.display_name // ""),
+    (.conversation_title // .conversation_name // .title // ""),
+    (.conversation_id // .session_id // ""),
+    (.workspace.project_dir // .workspace.current_dir // .cwd // ""),
     (.terminal_width // 80)
-  ' 2>/dev/null || printf "idle\n0\n0\n0\n\nfalse\nfalse\n0\n0\n0\n\n80\n"
+  ' 2>/dev/null || printf "idle\n0\n0\n0\n\nfalse\nfalse\n0\n0\n0\n\n\n\n\n80\n"
 )"
 
 # ─── Computed Values ─────────────────────────────────────────────────────────
@@ -93,6 +99,30 @@ case "$STATE" in
   error)    S="${FG_BRIGHT_RED}${B}✖ ERROR${R}" ;;
   *)        S="${FG_WHITE}${B}⏳ $(echo "$STATE" | tr '[:lower:]' '[:upper:]')${R}" ;;
 esac
+
+# ─── Conversation / Session ──────────────────────────────────────────────────
+C=""
+NAME_TO_SHOW=""
+if [ -n "$CONV_TITLE" ] && ! [[ "$CONV_TITLE" =~ ^[0-9a-fA-F-]{36}$ ]]; then
+  NAME_TO_SHOW="$CONV_TITLE"
+elif [ -n "$WS_DIR" ]; then
+  NAME_TO_SHOW=$(basename "$WS_DIR")
+elif [ -n "$CONV_ID" ]; then
+  if [[ "$CONV_ID" =~ ^[0-9a-fA-F-]{36}$ ]]; then
+    NAME_TO_SHOW="${CONV_ID:0:8}"
+  else
+    NAME_TO_SHOW="$CONV_ID"
+  fi
+fi
+
+if [ -n "$NAME_TO_SHOW" ]; then
+  if [ "${#NAME_TO_SHOW}" -gt 24 ]; then
+    CONV_DISPLAY="${NAME_TO_SHOW:0:21}..."
+  else
+    CONV_DISPLAY="$NAME_TO_SHOW"
+  fi
+  C="${FG_GRAY} ╱ ${FG_BRIGHT_CYAN}💬 ${CONV_DISPLAY}${R}"
+fi
 
 # ─── VCS Branch ──────────────────────────────────────────────────────────────
 V=""
@@ -183,7 +213,7 @@ fi
 DOT="${FG_GRAY} · ${R}"
 
 # ─── Output Layout ───────────────────────────────────────────────────────────
-LINE1="${S}${M}${V}"
+LINE1="${S}${C}${M}${V}"
 LINE2="${CTX}${DOT}${ART_FMT}${DOT}${SUB_FMT}${DOT}${BG_FMT}${DOT}${SB}"
 
 if [ "$COLS" -ge 120 ]; then
@@ -192,6 +222,6 @@ elif [ "$COLS" -ge 80 ]; then
   echo -e "${FG_GRAY}╭─${R} ${LINE1}"
   echo -e "${FG_GRAY}╰─${R} ${LINE2}"
 else
-  echo -e "${S}${M}"
+  echo -e "${S}${C}${M}"
   echo -e "${CTX}${DOT}${BG_FMT}"
 fi
