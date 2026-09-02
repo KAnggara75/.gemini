@@ -56,16 +56,20 @@ link_file "${REPO_DIR}/settings.json" "${TARGET_DIR}/settings.json"
 link_file "${REPO_DIR}/GEMINI.md" "${TARGET_DIR}/GEMINI.md"
 
 echo
-echo "[4/4] Setting up local symlink & git skip-worktree..."
-# Ensure local repo settings.json points to target ~/.gemini/antigravity-cli/settings.json if it exists
-if [ -f "${TARGET_DIR}/antigravity-cli/settings.json" ] && [ ! -L "${REPO_DIR}/antigravity-cli/settings.json" ]; then
-  ln -sf "${TARGET_DIR}/antigravity-cli/settings.json" "${REPO_DIR}/antigravity-cli/settings.json"
-fi
+echo "[4/4] Setting up local symlinks & git skip-worktree..."
+# Ensure local repo configs point to target ~/.gemini/ configs if they exist
+for cfg in "antigravity-cli/settings.json" "config/config.json" "config/mcp_config.json"; do
+  if [ -f "${TARGET_DIR}/${cfg}" ] && [ ! -L "${REPO_DIR}/${cfg}" ]; then
+    ln -sf "${TARGET_DIR}/${cfg}" "${REPO_DIR}/${cfg}"
+    echo "  [LINKED] ${REPO_DIR}/${cfg} -> ${TARGET_DIR}/${cfg}"
+  fi
+done
 
 # Protect against accidental local leaks
 if git -C "${REPO_DIR}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   git -C "${REPO_DIR}" update-index --skip-worktree antigravity-cli/settings.json 2>/dev/null || true
   git -C "${REPO_DIR}" update-index --skip-worktree config/config.json 2>/dev/null || true
+  git -C "${REPO_DIR}" update-index --skip-worktree config/mcp_config.json 2>/dev/null || true
   echo "  [SECURED] Git skip-worktree enabled for local config files."
 fi
 
