@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "context7": {
-      "command": "npx",
+      "command": "bunx",
       "args": [
         "-y",
         "@upstash/context7-mcp",
@@ -10,10 +10,33 @@
       ]
     },
     "podman-mcp": {
-      "command": "npx",
+      "command": "bunx",
       "args": [
         "-y",
         "podman-mcp-server@latest"
+      ]
+    },
+    "git": {
+      "command": "bunx",
+      "args": [
+        "mcp-git"
+      ]
+    },
+    "memory": {
+      "command": "bunx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory",
+        "--file",
+        "/Users/i/work/KAnggara75/.gemini/memory.json"
+      ]
+    },
+    "filesystem": {
+      "command": "bunx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/i/work"
       ]
     }
   }
