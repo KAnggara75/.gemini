@@ -6,3 +6,6 @@ config/projects
 mcp.log
 history.jsonl
 memory.json
+skills/*
+!skills/kanggara/
+!skills/kanggara/**

@@ -51,12 +51,29 @@ if [ -d "${REPO_DIR}/hooks" ]; then
 fi
 
 echo
-echo "[3/4] Linking root configs..."
+echo "[3/5] Linking root configs..."
 link_file "${REPO_DIR}/settings.json" "${TARGET_DIR}/settings.json"
 link_file "${REPO_DIR}/GEMINI.md" "${TARGET_DIR}/GEMINI.md"
 
 echo
-echo "[4/4] Setting up local symlinks & git skip-worktree..."
+echo "[4/5] Setting up skills..."
+AGENTS_SKILLS_DIR="${HOME}/.agents/skills"
+mkdir -p "${AGENTS_SKILLS_DIR}"
+mkdir -p "${REPO_DIR}/skills"
+
+# Ensure ~/.gemini/skills points to ~/.agents/skills
+if [ ! -e "${TARGET_DIR}/skills" ] && [ ! -L "${TARGET_DIR}/skills" ]; then
+  ln -sf "${AGENTS_SKILLS_DIR}" "${TARGET_DIR}/skills"
+  echo "  [LINKED] ${TARGET_DIR}/skills -> ${AGENTS_SKILLS_DIR}"
+fi
+
+# Link skills/kanggara to ~/.agents/skills/kanggara
+if [ -d "${REPO_DIR}/skills/kanggara" ]; then
+  link_file "${REPO_DIR}/skills/kanggara" "${AGENTS_SKILLS_DIR}/kanggara"
+fi
+
+echo
+echo "[5/5] Setting up local symlinks & git skip-worktree..."
 # Ensure local repo configs point to target ~/.gemini/ configs if they exist
 for cfg in "antigravity-cli/settings.json" "config/config.json" "config/mcp_config.json"; do
   if [ -f "${TARGET_DIR}/${cfg}" ] && [ ! -L "${REPO_DIR}/${cfg}" ]; then
