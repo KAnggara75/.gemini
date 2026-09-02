@@ -6,7 +6,7 @@
         "-y",
         "@upstash/context7-mcp",
         "--api-key",
-        "ctx7sk-d676f8a8-7320-4c9f-8492-da71a6c87efd"
+        "YOUR_CONTEXT7_API_KEY"
       ]
     },
     "podman-mcp": {
@@ -29,7 +29,7 @@
         "@modelcontextprotocol/server-memory"
       ],
       "env": {
-        "MEMORY_FILE_PATH": "/Users/i/work/KAnggara75/.gemini/memory.json"
+        "MEMORY_FILE_PATH": "~/.gemini/memory.json"
       }
     },
     "filesystem": {
@@ -37,7 +37,7 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "/Users/i/work"
+        "~"
       ]
     }
   }
