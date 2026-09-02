@@ -1,29 +1,41 @@
-# RTK - Rust Token Killer
+# Antigravity Workspace Guidelines
 
-**Usage**: Token-optimized CLI proxy (60-90% savings on dev operations)
+## RTK (Rust Token Killer)
+Token-optimized CLI proxy (menghemat 60-90% token pada operasi dev).
 
-## Meta Commands (always use rtk directly)
+### Usage & Meta Commands
+- Semua perintah shell standar (misal: `git status`, `ls`, `grep`) otomatis ditulis ulang via hook (`rtk <cmd>`).
+- Gunakan `rtk` langsung untuk meta-commands berikut:
+  ```bash
+  rtk gain              # Analisis penghematan token
+  rtk gain --history    # Riwayat perintah dan penghematan
+  rtk discover          # Temukan potensi penghematan
+  rtk proxy <cmd>       # Eksekusi raw command tanpa filter
+  ```
 
+### Verification
 ```bash
-rtk gain              # Show token savings analytics
-rtk gain --history    # Show command usage history with savings
-rtk discover          # Analyze Claude Code history for missed opportunities
-rtk proxy <cmd>       # Execute raw command without filtering (for debugging)
+rtk --version         # rtk X.Y.Z
+which rtk             # Verifikasi binary RTK aktif
 ```
 
-## Installation Verification
+---
 
-```bash
-rtk --version         # Should show: rtk X.Y.Z
-rtk gain              # Should work (not "command not found")
-which rtk             # Verify correct binary
-```
+## Context7 MCP
+Gunakan Context7 MCP saat membutuhkan dokumentasi terkini untuk library, framework, SDK, API, CLI tool, atau cloud service.
 
-⚠️ **Name collision**: If `rtk gain` fails, you may have reachingforthejack/rtk (Rust Type Kit) installed instead.
+### Scope
+- **Gunakan untuk**: API syntax, konfigurasi, migrasi versi, debugging spesifik library, setup/instalasi.
+- **Jangan gunakan untuk**: Refactoring umum, logika bisnis dasar, code review, atau scripting scratch umum.
 
-## Hook-Based Usage
+### Workflow
+1. **Resolve ID**: Panggil `resolve-library-id` (`libraryName`, `query`) untuk mendapatkan library ID format `/org/project`.
+2. **Select ID**: Pilih hasil terbaik berdasarkan kemiripan nama, deskripsi, snippet count, dan benchmark score.
+3. **Query Docs**: Panggil `query-docs` dengan library ID spesifik dan query fokus per-konsep.
+4. **Answer**: Jawab dengan merujuk dokumentasi resmi yang didapat.
 
-All other commands are automatically rewritten by the Claude Code hook.
-Example: `git status` → `rtk git status` (transparent, 0 tokens overhead)
+---
 
-Refer to CLAUDE.md for full command reference.
+## Project & Dotfile Rules
+- **Sensitive Configs**: Jaga agar `config/config.json`, `config/mcp_config.json`, dan `antigravity-cli/settings.json` tetap disanitasi di git publik dan gunakan `git update-index --skip-worktree` untuk konfigurasi lokal.
+- **Symlinks**: Gunakan `install.sh` untuk menghubungkan konfigurasi repositori ke direktori `~/.gemini/`.
