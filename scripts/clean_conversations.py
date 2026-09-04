@@ -8,6 +8,7 @@ import re
 import datetime
 import argparse
 import shutil
+import math
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -166,19 +167,43 @@ def collect_conversations(base_dir, target_core, target_cli, target_ide):
     items.sort(key=lambda x: x["mtime"], reverse=True)
     return items
 
-def display_list(items):
-    print("\n" + "=" * 94)
-    print("                              DAFTAR PERCAKAPAN ANTIGRAVITY")
-    print("=" * 94)
-    print(f"{'No.':<5} | {'App':<4} | {'Conversation ID':<38} | {'Last Modified':<16} | {'Title'}")
-    print("-" * 5 + "-+-" + "-" * 4 + "-+-" + "-" * 38 + "-+-" + "-" * 16 + "-+-" + "-" * 22)
-    for idx, item in enumerate(items, 1):
+def render_page(items, page_idx, page_size=10, clear_screen=False):
+    total_items = len(items)
+    total_pages = max(1, math.ceil(total_items / page_size))
+    page_idx = max(0, min(page_idx, total_pages - 1))
+
+    start_idx = page_idx * page_size
+    end_idx = min(start_idx + page_size, total_items)
+    page_items = items[start_idx:end_idx]
+
+    if clear_screen and sys.stdout.isatty():
+        sys.stdout.write("\033[2J\033[H")
+        sys.stdout.flush()
+
+    print("=" * 90)
+    header_text = f"DAFTAR PERCAKAPAN ANTIGRAVITY (Halaman {page_idx + 1} dari {total_pages})"
+    print(header_text.center(90))
+    print("=" * 90)
+    print(f"{'No.':<5} | {'App':<4} | {'Conv ID':<8} | {'Last Modified':<16} | {'Title':<45}")
+    print(f"{'-' * 5}-+-{'-' * 4}-+-{'-' * 8}-+-{'-' * 16}-+-{'-' * 45}")
+
+    for i, item in enumerate(page_items, start_idx + 1):
         dt_str = datetime.datetime.fromtimestamp(item["mtime"]).strftime("%Y-%m-%d %H:%M")
-        title_disp = (item["title"][:35] + "..") if len(item["title"]) > 37 else item["title"]
-        print(f"[{idx:<3}] | {item['app_label']:<4} | {item['id']:<38} | {dt_str:<16} | {title_disp}")
-    print("-" * 94)
-    print(f"Total percakapan: {len(items)}")
-    print("=" * 94)
+        short_id = item["id"][:8]
+        if len(item["title"]) > 45:
+            title_disp = item["title"][:42] + "..."
+        else:
+            title_disp = item["title"]
+        print(f"[{i:<3}] | {item['app_label']:<4} | {short_id:<8} | {dt_str:<16} | {title_disp:<45}")
+
+    print("-" * 90)
+    info_text = f"Menampilkan {start_idx + 1}-{end_idx} dari {total_items} percakapan | Halaman {page_idx + 1}/{total_pages}"
+    print(info_text.center(90))
+    print("=" * 90)
+    print(f"{'Kontrol Navigasi (Langsung tanpa Enter):':<90}")
+    print(f"{'  [n] Next page   [p] Prev page   [d] Pilih nomor hapus   [q] Keluar':<90}")
+    print(f"{'  (Atau ketik langsung angka nomor percakapan untuk menghapus)':<90}")
+    print("-" * 90)
 
 def parse_selection(user_input, total_count):
     selected = set()
@@ -212,69 +237,7 @@ def parse_selection(user_input, total_count):
 
     return selected
 
-def main():
-    args = parse_args()
-    base_dir = os.path.expanduser("~/.gemini")
-
-    target_core = args.core
-    target_cli = args.cli
-    target_ide = args.ide
-    if not target_core and not target_cli and not target_ide:
-        target_core = True
-        target_cli = True
-        target_ide = True
-
-    items = collect_conversations(base_dir, target_core, target_cli, target_ide)
-    if not items:
-        print("Tidak ada percakapan yang ditemukan.")
-        return
-
-    display_list(items)
-
-    if args.list:
-        return
-
-    selected_indices = set()
-    if args.delete_all:
-        selected_indices = set(range(len(items)))
-    else:
-        print("\nFormat pemilihan nomor:")
-        print("  - Nomor satuan (contoh: 3)")
-        print("  - Beberapa nomor dipisah koma (contoh: 1, 4, 7)")
-        print("  - Rentang nomor (contoh: 1-5)")
-        print("  - Ketik 'all' untuk memilih semua")
-        print("  - Tekan Enter atau ketik 'q' untuk batal\n")
-        try:
-            choice = input("Pilih nomor yang ingin dihapus: ")
-        except (EOFError, KeyboardInterrupt):
-            choice = ""
-        res = parse_selection(choice, len(items))
-        if res is None or len(res) == 0:
-            print("Operasi dibatalkan. Tidak ada file yang dihapus.")
-            return
-        selected_indices = res
-
-    selected_items = [items[i] for i in sorted(selected_indices)]
-
-    print(f"\nPercakapan yang dipilih untuk dihapus ({len(selected_items)} item):")
-    for item in selected_items:
-        print(f"  - [{item['app_label']}] {item['id']} : {item['title']}")
-
-    if args.dry_run:
-        print("\n[DRY-RUN] Simulasi selesai. Tidak ada file yang dihapus.")
-        return
-
-    if not args.force:
-        try:
-            confirm = input(f"\nApakah Anda yakin ingin menghapus {len(selected_items)} percakapan di atas? (y/N): ").strip()
-        except (EOFError, KeyboardInterrupt):
-            confirm = "n"
-        if confirm.lower() not in ["y", "yes"]:
-            print("Pembersihan dibatalkan.")
-            return
-
-    print("\nSedang menghapus percakapan terpilih...")
-
+def execute_deletion(base_dir, selected_items):
     cli_db_path = os.path.join(base_dir, "antigravity-cli", "conversation_summaries.db")
     conn_cli = None
     if os.path.exists(cli_db_path):
@@ -316,7 +279,7 @@ def main():
             except Exception:
                 pass
 
-        print(f"  [TERHAPUS] [{item['app_label']}] {cid} : {item['title']}")
+        print(f"  [TERHAPUS] [{item['app_label']}] {cid[:8]} : {item['title']}")
 
     if conn_cli:
         try:
@@ -325,7 +288,205 @@ def main():
         except Exception:
             pass
 
-    print(f"\n=== Selesai! Berhasil menghapus {len(selected_items)} percakapan. ===")
+def get_single_char():
+    """Membaca 1 karakter dari stdin tanpa perlu menekan Enter (untuk terminal TTY)."""
+    if not sys.stdin.isatty():
+        line = sys.stdin.readline()
+        return line.strip() if line else ""
+
+    import tty
+    import termios
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setcbreak(fd)
+        ch = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return ch
+
+def ask_confirmation(count):
+    """
+    Konfirmasi penghapusan:
+    - User menekan Enter (\r, \n) atau y/Y -> langsung konfirmasi hapus!
+    - User menekan Esc (\x1b), q/Q, n/N, Ctrl+C (\x03) -> batalkan (cancel).
+    """
+    prompt_msg = f"\nApakah Anda yakin ingin menghapus {count} percakapan di atas? [Enter/y: Hapus, Esc/q/n: Batal]: "
+    sys.stdout.write(prompt_msg)
+    sys.stdout.flush()
+
+    if not sys.stdin.isatty():
+        try:
+            line = sys.stdin.readline()
+        except (EOFError, KeyboardInterrupt):
+            return False
+        if line is None:
+            return False
+        cleaned = line.strip().lower()
+        # Jika user enter langsung (line kosong) atau 'y'/'yes' -> langsung hapus
+        if cleaned == "" or cleaned in ["y", "yes"]:
+            return True
+        return False
+
+    ch = get_single_char()
+    # Enter (\r atau \n) atau y/Y -> langsung hapus
+    if ch in ["\r", "\n", "y", "Y"]:
+        sys.stdout.write("Hapus (Konfirmasi)\n")
+        sys.stdout.flush()
+        return True
+    # Esc (\x1b), q/Q, n/N, Ctrl+C (\x03) -> batal
+    sys.stdout.write("Batal (Dibatalkan)\n")
+    sys.stdout.flush()
+    return False
+
+def main():
+    args = parse_args()
+    base_dir = os.path.expanduser("~/.gemini")
+
+    target_core = args.core
+    target_cli = args.cli
+    target_ide = args.ide
+    if not target_core and not target_cli and not target_ide:
+        target_core = True
+        target_cli = True
+        target_ide = True
+
+    PAGE_SIZE = 10
+
+    # Mode 1: Hanya list seluruhnya
+    if args.list:
+        items = collect_conversations(base_dir, target_core, target_cli, target_ide)
+        if not items:
+            print("Tidak ada percakapan yang ditemukan.")
+            return
+        total_pages = max(1, math.ceil(len(items) / PAGE_SIZE))
+        for p in range(total_pages):
+            render_page(items, p, PAGE_SIZE, clear_screen=False)
+            print()
+        return
+
+    # Mode 2: Hapus semua sekaligus tanpa prompt
+    if args.delete_all:
+        items = collect_conversations(base_dir, target_core, target_cli, target_ide)
+        if not items:
+            print("Tidak ada percakapan yang ditemukan.")
+            return
+        render_page(items, 0, PAGE_SIZE, clear_screen=False)
+        print(f"\nSemua {len(items)} percakapan dipilih untuk dihapus.")
+        if args.dry_run:
+            print("\n[DRY-RUN] Simulasi selesai. Tidak ada file yang dihapus.")
+            return
+        if not args.force:
+            if not ask_confirmation(len(items)):
+                print("Pembersihan dibatalkan.")
+                return
+        print("\nSedang menghapus semua percakapan...")
+        execute_deletion(base_dir, items)
+        print(f"\n=== Selesai! Berhasil menghapus {len(items)} percakapan. ===")
+        return
+
+    # Mode 3: Interactive Pagination & Deletion
+    current_page = 0
+    while True:
+        items = collect_conversations(base_dir, target_core, target_cli, target_ide)
+        if not items:
+            print("\nTidak ada percakapan yang tersisa.")
+            break
+
+        total_pages = max(1, math.ceil(len(items) / PAGE_SIZE))
+        if current_page >= total_pages:
+            current_page = total_pages - 1
+
+        render_page(items, current_page, PAGE_SIZE, clear_screen=True)
+
+        if not sys.stdin.isatty():
+            # Jika piped input / non-tty
+            try:
+                line = sys.stdin.readline()
+            except (EOFError, KeyboardInterrupt):
+                break
+            if not line:
+                break
+            line_str = line.strip()
+            if line_str.lower() in ['n', 'next']:
+                if current_page < total_pages - 1:
+                    current_page += 1
+                continue
+            elif line_str.lower() in ['p', 'prev']:
+                if current_page > 0:
+                    current_page -= 1
+                continue
+            elif line_str.lower() in ['q', 'quit', 'exit']:
+                break
+            else:
+                initial_num = line_str
+        else:
+            # Mode TTY interaktif: Baca 1 karakter tanpa Enter
+            sys.stdout.write("Pilihan Anda [n/p/d/q atau angka]: ")
+            sys.stdout.flush()
+            try:
+                ch = get_single_char()
+            except (EOFError, KeyboardInterrupt):
+                print()
+                break
+
+            if ch in ['\x03', '\x04', 'q', 'Q', '\x1b']:  # Ctrl+C, Ctrl+D, q, Esc
+                print(f"{ch}\nKeluar.")
+                break
+            elif ch in ['n', 'N']:
+                if current_page < total_pages - 1:
+                    current_page += 1
+                continue
+            elif ch in ['p', 'P']:
+                if current_page > 0:
+                    current_page -= 1
+                continue
+            elif ch in ['d', 'D']:
+                print(f"{ch}")
+                try:
+                    initial_num = input("Masukkan nomor percakapan yang ingin dihapus (misal 1, 3-5): ").strip()
+                except (EOFError, KeyboardInterrupt):
+                    initial_num = ""
+            elif ch.isdigit():
+                sys.stdout.write(ch)
+                sys.stdout.flush()
+                try:
+                    rest = sys.stdin.readline()
+                except (EOFError, KeyboardInterrupt):
+                    rest = ""
+                initial_num = (ch + rest).strip()
+            else:
+                continue
+
+        if not initial_num:
+            continue
+
+        res = parse_selection(initial_num, len(items))
+        if not res:
+            print("Pilihan tidak valid.")
+            continue
+
+        selected_items = [items[i] for i in sorted(res)]
+        print(f"\nPercakapan yang dipilih untuk dihapus ({len(selected_items)} item):")
+        for item in selected_items:
+            print(f"  - [{item['app_label']}] {item['id'][:8]} : {item['title']}")
+
+        if args.dry_run:
+            print("\n[DRY-RUN] Simulasi selesai. Tidak ada file yang dihapus.")
+            break
+
+        if not args.force:
+            if not ask_confirmation(len(selected_items)):
+                print("Penghapusan dibatalkan. Kembali ke daftar...\n")
+                import time
+                time.sleep(0.6)
+                continue
+
+        print("\nSedang menghapus percakapan terpilih...")
+        execute_deletion(base_dir, selected_items)
+        print(f"\n=== Berhasil menghapus {len(selected_items)} percakapan! Memperbarui daftar... ===")
+        import time
+        time.sleep(0.8)
 
 if __name__ == "__main__":
     main()
