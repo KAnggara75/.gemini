@@ -32,9 +32,12 @@ link_file() {
   echo "  [LINKED] ${dest} -> ${src}"
 }
 
-echo "[1/5] Linking CLI scripts..."
+echo "[1/5] Linking CLI scripts & settings..."
 link_file "${REPO_DIR}/antigravity-cli/statusline.sh" "${TARGET_DIR}/antigravity-cli/statusline.sh"
 link_file "${REPO_DIR}/antigravity-cli/title.sh" "${TARGET_DIR}/antigravity-cli/title.sh"
+if [ -f "${REPO_DIR}/antigravity-cli/settings.json" ]; then
+  link_file "${REPO_DIR}/antigravity-cli/settings.json" "${TARGET_DIR}/antigravity-cli/settings.json"
+fi
 chmod +x "${REPO_DIR}/antigravity-cli/statusline.sh" "${REPO_DIR}/antigravity-cli/title.sh"
 
 echo
@@ -54,6 +57,9 @@ echo "[3/5] Linking config folder & root configs..."
 link_file "${REPO_DIR}/config" "${TARGET_DIR}/config"
 link_file "${REPO_DIR}/settings.json" "${TARGET_DIR}/settings.json"
 link_file "${REPO_DIR}/GEMINI.md" "${TARGET_DIR}/GEMINI.md"
+if [ -f "${REPO_DIR}/memory.json" ]; then
+  link_file "${REPO_DIR}/memory.json" "${TARGET_DIR}/memory.json"
+fi
 
 echo
 echo "[4/5] Setting up skills..."
@@ -78,11 +84,7 @@ if [ -d "${REPO_DIR}/skills" ]; then
 fi
 
 echo
-echo "[5/5] Setting up local symlinks & git skip-worktree..."
-# Ensure local repo settings.json points to target ~/.gemini/antigravity-cli/settings.json if it exists
-if [ -f "${TARGET_DIR}/antigravity-cli/settings.json" ] && [ ! -L "${REPO_DIR}/antigravity-cli/settings.json" ]; then
-  ln -sf "${TARGET_DIR}/antigravity-cli/settings.json" "${REPO_DIR}/antigravity-cli/settings.json"
-fi
+echo "[5/5] Setting up git skip-worktree..."
 
 # Protect against accidental local leaks
 if git -C "${REPO_DIR}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
