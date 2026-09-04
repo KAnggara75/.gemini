@@ -442,19 +442,30 @@ def main():
                     current_page -= 1
                 continue
             elif ch in ['d', 'D']:
-                print(f"{ch}")
                 try:
-                    initial_num = input("Masukkan nomor percakapan yang ingin dihapus (misal 1, 3-5): ").strip()
+                    sys.stdout.write("\r\033[K")
+                    sys.stdout.flush()
+                    initial_num = input("Pilih nomor yang ingin dihapus: ").strip()
                 except (EOFError, KeyboardInterrupt):
                     initial_num = ""
             elif ch.isdigit():
-                sys.stdout.write(ch)
-                sys.stdout.flush()
                 try:
-                    rest = sys.stdin.readline()
+                    import readline
+                    def hook():
+                        readline.insert_text(ch)
+                        readline.set_startup_hook(None)
+                    readline.set_startup_hook(hook)
+                    sys.stdout.write("\r\033[K")
+                    sys.stdout.flush()
+                    initial_num = input("Pilih nomor yang ingin dihapus: ").strip()
                 except (EOFError, KeyboardInterrupt):
-                    rest = ""
-                initial_num = (ch + rest).strip()
+                    initial_num = ""
+                finally:
+                    try:
+                        import readline
+                        readline.set_startup_hook(None)
+                    except Exception:
+                        pass
             else:
                 continue
 
