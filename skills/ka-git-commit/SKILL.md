@@ -15,10 +15,11 @@ Specialized runbook for crafting precise, production-grade Conventional Commit m
 
 ## Core Objectives
 1. **File-by-File & Atomic Commit First**: Selalu utamakan memecah perubahan menjadi commit per file (1 per 1) atau unit perubahan terkecil yang mandiri, agar riwayat commit bersih, mudah di-review, dan mudah di-revert.
-2. **Accurate Diff Analysis**: Inspect staged changes (or unstaged when nothing is staged) efficiently without exhausting token budgets.
-3. **Intelligent Ticket & Scope Extraction**: Parse ticket keys (Jira, Linear, GitHub Issues) from branch names and determine concise subsystem scopes.
-4. **Semantic Classification**: Choose the exact Conventional Commit type (`feat`, `fix`, `refactor`, `perf`, `docs`, `style`, `test`, `build`, `ci`, `chore`, `revert`).
-5. **Ready-to-Execute CLI Snippets**: Provide sequential, copy-pasteable git CLI commands per file/atomic unit.
+2. **Auto-Commit for Single File**: Jika hanya ada 1 file yang mengalami perubahan (modified/untracked), **LANGSUNG EKSEKUSI COMMIT** menggunakan format Mode A tanpa perlu meminta konfirmasi atau bertanya ke user.
+3. **Accurate Diff Analysis**: Inspect staged changes (or unstaged when nothing is staged) efficiently without exhausting token budgets.
+4. **Intelligent Ticket & Scope Extraction**: Parse ticket keys (Jira, Linear, GitHub Issues) from branch names and determine concise subsystem scopes.
+5. **Semantic Classification**: Choose the exact Conventional Commit type (`feat`, `fix`, `refactor`, `perf`, `docs`, `style`, `test`, `build`, `ci`, `chore`, `revert`).
+6. **Ready-to-Execute CLI Snippets**: Provide sequential, copy-pasteable git CLI commands per file/atomic unit.
 
 ---
 
@@ -52,7 +53,8 @@ Always prioritize token efficiency. Utilize RTK if available (`rtk git ...`).
 ### Step 3: Granular Analysis & Per-File Splitting (Utamakan 1 per 1)
 
 Analyze changes for each file individually:
-- **Primary Rule**: Buat commit terpisah untuk setiap file yang diubah (`1 file = 1 commit`).
+- **Single File Direct Execution**: Jika total file yang berubah hanya **1 file**, **LANGSUNG EKSEKUSI COMMIT** menggunakan perintah git Mode A tanpa menanyakan konfirmasi lagi kepada pengguna. Langsung laporkan hasilnya setelah commit sukses.
+- **Multiple Files (Primary Rule)**: Jika terdapat lebih dari 1 file, buat commit terpisah untuk setiap file yang diubah (`1 file = 1 commit`) dan sajikan drafnya.
 - **Exception (Tightly Coupled)**: Hanya gabungkan beberapa file jika perubahan antar-file tersebut benar-benar saling bergantung erat (misal: implementasi fungsi dan unit test-nya, atau file kode dan type declaration-nya).
 - **Scope**: Tentukan scope spesifik berdasarkan path file atau modul yang disentuh (misal: `install`, `gitignore`, `mcp`, `auth`).
 - **Semantic Type**: Tentukan tipe yang akurat per file (`feat`, `fix`, `refactor`, `chore`, `docs`, `style`, `test`, `build`, `ci`).
@@ -103,7 +105,8 @@ Analyze changes for each file individually:
 
 ## Output Template & Modes
 
-Selalu utamakan penyajian **Mode A: File-by-File Atomic Commits (1 per 1)** secara default, lalu sertakan **Mode B: Single Combined Commit** hanya sebagai opsi alternatif.
+- **Jika Hanya 1 File Diubah**: Langsung jalankan perintah commit Mode A (atomic commit) tanpa meminta konfirmasi terlebih dahulu, lalu tampilkan ringkasan hasil commit.
+- **Jika Lebih Dari 1 File Diubah**: Selalu utamakan penyajian **Mode A: File-by-File Atomic Commits (1 per 1)** secara default, lalu sertakan **Mode B: Single Combined Commit** hanya sebagai opsi alternatif.
 
 ### Mode A: File-by-File Atomic Commits (Utamakan / Default)
 Sajikan draf commit dan perintah eksekusi terpisah secara berurutan untuk setiap file:
