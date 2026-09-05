@@ -6,6 +6,7 @@ config/projects
 mcp.log
 history.jsonl
 memory.json
+memory.jsonl
 skills/*
 !skills/ka-*/
 !skills/ka-*/**
