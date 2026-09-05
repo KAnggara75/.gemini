@@ -57,7 +57,11 @@ echo "[3/6] Linking config folder & root configs..."
 link_file "${REPO_DIR}/config" "${TARGET_DIR}/config"
 link_file "${REPO_DIR}/settings.json" "${TARGET_DIR}/settings.json"
 link_file "${REPO_DIR}/GEMINI.md" "${TARGET_DIR}/GEMINI.md"
-if [ -f "${REPO_DIR}/memory.json" ]; then
+if [ -f "${REPO_DIR}/memory.jsonl" ]; then
+  link_file "${REPO_DIR}/memory.jsonl" "${TARGET_DIR}/memory.jsonl"
+  # Maintain backward compatibility link for legacy tools expecting memory.json
+  ln -sf "${TARGET_DIR}/memory.jsonl" "${TARGET_DIR}/memory.json"
+elif [ -f "${REPO_DIR}/memory.json" ]; then
   link_file "${REPO_DIR}/memory.json" "${TARGET_DIR}/memory.json"
 fi
 
