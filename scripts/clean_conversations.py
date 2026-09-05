@@ -16,6 +16,7 @@ def parse_args():
     )
     parser.add_argument("-l", "--list", action="store_true", help="Hanya tampilkan daftar percakapan tanpa menghapus")
     parser.add_argument("--delete-all", action="store_true", help="Pilih SEMUA percakapan sekaligus untuk dihapus")
+    parser.add_argument("-o", "--older-than", type=int, metavar="DAYS", help="Pilih percakapan yang lebih lama dari N hari (misal: 30) untuk dihapus")
     parser.add_argument("-f", "--force", "-y", "--yes", action="store_true", help="Hapus tanpa konfirmasi interaktif")
     parser.add_argument("-n", "--dry-run", action="store_true", help="Simulasi tampilan target tanpa menghapus file")
     parser.add_argument("--core", action="store_true", help="Hanya operasikan pada ~/.gemini/antigravity")
@@ -201,7 +202,7 @@ def render_page(items, page_idx, page_size=10, clear_screen=False):
     print(info_text.center(90))
     print("=" * 90)
     print(f"{'Kontrol Navigasi (Langsung tanpa Enter):':<90}")
-    print(f"{'  [n] Next page   [p] Prev page   [d] Pilih nomor hapus   [q] Keluar':<90}")
+    print(f"{'  [n] Next page   [p] Prev page   [o] Hapus > 30 hari   [d] Hapus   [q] Keluar':<90}")
     print(f"{'  (Atau ketik langsung angka nomor percakapan untuk menghapus)':<90}")
     print("-" * 90)
 
@@ -385,6 +386,34 @@ def main():
         print(f"\n=== Selesai! Berhasil menghapus {len(items)} percakapan. ===")
         return
 
+    # Mode 2b: Hapus percakapan yang lebih lama dari N hari via argumen CLI
+    if args.older_than is not None:
+        items = collect_conversations(base_dir, target_core, target_cli, target_ide)
+        if not items:
+            print("Tidak ada percakapan yang ditemukan.")
+            return
+        import time
+        cutoff_time = time.time() - (args.older_than * 86400)
+        old_items = [it for it in items if it["mtime"] < cutoff_time]
+        if not old_items:
+            print(f"Tidak ada percakapan yang lebih lama dari {args.older_than} hari.")
+            return
+        print(f"\nDitemukan {len(old_items)} percakapan yang lebih lama dari {args.older_than} hari:")
+        for item in old_items:
+            dt_str = datetime.datetime.fromtimestamp(item["mtime"]).strftime("%Y-%m-%d %H:%M")
+            print(f"  - [{item['app_label']}] {item['id'][:8]} ({dt_str}) : {item['title']}")
+        if args.dry_run:
+            print("\n[DRY-RUN] Simulasi selesai. Tidak ada file yang dihapus.")
+            return
+        if not args.force:
+            if not ask_confirmation(len(old_items)):
+                print("Pembersihan dibatalkan.")
+                return
+        print("\nSedang menghapus percakapan...")
+        execute_deletion(base_dir, old_items)
+        print(f"\n=== Selesai! Berhasil menghapus {len(old_items)} percakapan. ===")
+        return
+
     # Mode 3: Interactive Pagination & Deletion
     current_page = 0
     while True:
@@ -416,13 +445,21 @@ def main():
                 if current_page > 0:
                     current_page -= 1
                 continue
+            elif line_str.lower() in ['o', 'old']:
+                import time
+                cutoff = time.time() - (30 * 86400)
+                selected_items = [it for it in items if it["mtime"] < cutoff]
+                if not selected_items:
+                    print("\nTidak ada percakapan yang lebih lama dari 30 hari.")
+                    continue
+                initial_num = None
             elif line_str.lower() in ['q', 'quit', 'exit']:
                 break
             else:
                 initial_num = line_str
         else:
             # Mode TTY interaktif: Baca 1 karakter tanpa Enter
-            sys.stdout.write("Pilihan Anda [n/p/d/q atau angka]: ")
+            sys.stdout.write("Pilihan Anda [n/p/o/d/q atau angka]: ")
             sys.stdout.flush()
             try:
                 ch = get_single_char()
@@ -441,6 +478,17 @@ def main():
                 if current_page > 0:
                     current_page -= 1
                 continue
+            elif ch in ['o', 'O']:
+                import time
+                cutoff = time.time() - (30 * 86400)
+                selected_items = [it for it in items if it["mtime"] < cutoff]
+                if not selected_items:
+                    sys.stdout.write("\r\033[K")
+                    print("Tidak ada percakapan yang lebih lama dari 30 hari.")
+                    import time as tm
+                    tm.sleep(1.2)
+                    continue
+                initial_num = None
             elif ch in ['d', 'D']:
                 try:
                     sys.stdout.write("\r\033[K")
@@ -469,18 +517,23 @@ def main():
             else:
                 continue
 
-        if not initial_num:
+        if initial_num is not None:
+            if not initial_num:
+                continue
+
+            res = parse_selection(initial_num, len(items))
+            if not res:
+                print("Pilihan tidak valid.")
+                continue
+
+            selected_items = [items[i] for i in sorted(res)]
+        elif not selected_items:
             continue
 
-        res = parse_selection(initial_num, len(items))
-        if not res:
-            print("Pilihan tidak valid.")
-            continue
-
-        selected_items = [items[i] for i in sorted(res)]
         print(f"\nPercakapan yang dipilih untuk dihapus ({len(selected_items)} item):")
         for item in selected_items:
-            print(f"  - [{item['app_label']}] {item['id'][:8]} : {item['title']}")
+            dt_str = datetime.datetime.fromtimestamp(item["mtime"]).strftime("%Y-%m-%d %H:%M")
+            print(f"  - [{item['app_label']}] {item['id'][:8]} ({dt_str}) : {item['title']}")
 
         if args.dry_run:
             print("\n[DRY-RUN] Simulasi selesai. Tidak ada file yang dihapus.")

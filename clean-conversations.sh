@@ -6,7 +6,14 @@ set -euo pipefail
 # Wrapper shell script untuk scripts/clean_conversations.py
 # ==============================================================================
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Resolve real directory even if called via symlink
+SOURCE="${BASH_SOURCE[0]}"
+while [ -L "${SOURCE}" ]; do
+  DIR="$(cd -P "$(dirname "${SOURCE}")" && pwd)"
+  SOURCE="$(readlink "${SOURCE}")"
+  [[ ${SOURCE} != /* ]] && SOURCE="${DIR}/${SOURCE}"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "${SOURCE}")" && pwd)"
 PYTHON_BIN="$(command -v python3 || command -v python || true)"
 
 if [ -z "${PYTHON_BIN}" ]; then
