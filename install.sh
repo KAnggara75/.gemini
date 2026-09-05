@@ -85,12 +85,12 @@ fi
 
 echo
 echo "[5/6] Linking binaries & CLI tools..."
-chmod +x "${REPO_DIR}/clean-conversations.sh" "${REPO_DIR}/scripts/clean_conversations.py"
+chmod +x "${REPO_DIR}/skills/ka-del-conversation/clean-conversations.sh" "${REPO_DIR}/skills/ka-del-conversation/scripts/clean_conversations.py"
 
 # Link to ~/.local/bin and ~/.gemini/antigravity-cli/bin (both in PATH)
 for bin_dir in "${HOME}/.local/bin" "${TARGET_DIR}/antigravity-cli/bin"; do
   if [ -d "${bin_dir}" ]; then
-    link_file "${REPO_DIR}/clean-conversations.sh" "${bin_dir}/clean-conversations"
+    link_file "${REPO_DIR}/skills/ka-del-conversation/clean-conversations.sh" "${bin_dir}/clean-conversations"
   fi
 done
 
