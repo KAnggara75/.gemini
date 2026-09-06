@@ -1,11 +1,13 @@
 ---
 name: ka-context
-description: "Skill ini bertujuan untuk membangun baseline dokumentasi project memory dari repositori kode yang ada. Anda akan menganalisis struktur direktori, mengidentifikasi modul inti, dan menyusun dokumentasi arsitektur serta keputusan teknis yang telah dibuat. Hasilnya akan mencakup peta codebase, diagram arsitektur, keputusan teknis, dan daftar tugas yang perlu diselesaikan."
+description: "Membangun baseline project memory dari repository kode dengan menganalisis struktur, dependency, arsitektur, integrasi, keputusan teknis, dan technical debt. Menghasilkan CODEBASE_MAP.md, ARCHITECTURE.md, PROJECT_CONTEXT.md, DECISIONS.md, dan TODO.md."
 user-invocable: true
 license: MIT
 compatibility: Designed for Antigravity AI, Claude Code, and git-based repositories.
 metadata:
-  version: "2.1.0"
+  version: "1.0.0"
+  purpose: "Project memory bootstrap and architectural documentation"
+  mode: "read-only analysis with documentation generation"
 allowed-tools: Bash(git:*) Bash(rtk:*) Read Grep Glob
 ---
 
