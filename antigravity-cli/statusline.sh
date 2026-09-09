@@ -100,6 +100,21 @@ fi
 echo "$INPUT_JSON" > "/tmp/tmux_agent_state_${CLEAN_ID}.json" 2>/dev/null || true
 echo "$INPUT_JSON" > "/tmp/tmux_agent_state_global.json" 2>/dev/null || true
 
+# ─── Sound Notification on Decision / Confirmation Prompt ─────────────────────
+CONFIRM_PENDING=$(echo "$INPUT_JSON" | jq -r '.tool_confirmation_pending // false' 2>/dev/null || echo "false")
+if [ "$CONFIRM_PENDING" = "true" ]; then
+  NOTIF_LOCK="/tmp/antigravity_last_confirm_sound"
+  NOW=$(date +%s)
+  LAST_TIME=$(cat "$NOTIF_LOCK" 2>/dev/null || echo 0)
+  # Debounce minimal 4 detik agar suara tidak berulang secara beruntun
+  if [ $((NOW - LAST_TIME)) -ge 4 ]; then
+    echo "$NOW" > "$NOTIF_LOCK" 2>/dev/null || true
+    (afplay /System/Library/Sounds/Glass.aiff &) 2>/dev/null || true
+    (osascript -e 'display notification "Agent memerlukan keputusan/konfirmasi Anda!" with title "Antigravity" sound name "Glass"' &) 2>/dev/null || true
+  fi
+fi
+
+
 # ─── Computed Values ─────────────────────────────────────────────────────────
 PCT_FMT=$(LC_NUMERIC=C printf "%.1f" "$USED_PCT")
 PCT_INT=${USED_PCT%.*}; PCT_INT=${PCT_INT:-0}
