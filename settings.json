@@ -14,6 +14,15 @@
             "command": "~/.gemini/hooks/rtk-hook-gemini.sh"
           }
         ]
+      },
+      {
+        "matcher": "ask_question",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.gemini/hooks/notify-decision.sh"
+          }
+        ]
       }
     ]
   }
