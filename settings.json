@@ -7,7 +7,7 @@
   "hooks": {
     "BeforeTool": [
       {
-        "matcher": "run_shell_command",
+        "matcher": "run_command|run_shell_command",
         "hooks": [
           {
             "type": "command",
