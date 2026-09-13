@@ -1,11 +1,11 @@
 ---
 name: ka-git-commit
-description: "Generates high-quality, structured Conventional Commit messages by analyzing git diffs, extracting ticket/issue IDs from branch names, prioritizing granular file-by-file (1 per 1) atomic commits by default, and optimizing token usage with RTK and stat-first inspection. Use when crafting commit messages, reviewing staged changes, or preparing atomic commits."
+description: "Generates high-quality, structured Conventional Commit messages by analyzing git diffs, extracting ticket/issue IDs from branch names, prioritizing granular file-by-file (1 per 1) atomic commits by default, and optimizing token usage with RTK and stat-first inspection. Supports instant mode triggering (e.g. commit A, commit 1/1, commit B, commit all). Use when crafting commit messages, reviewing staged changes, or preparing atomic commits."
 user-invocable: true
 license: MIT
 compatibility: Designed for Antigravity AI, Claude Code, and git-based repositories.
 metadata:
-  version: "2.1.0"
+  version: "2.2.0"
 allowed-tools: Bash(git:*) Bash(rtk:*) Read Grep Glob
 ---
 
@@ -13,9 +13,23 @@ allowed-tools: Bash(git:*) Bash(rtk:*) Read Grep Glob
 
 Specialized runbook for crafting precise, production-grade Conventional Commit messages adhering to Conventional Commits 1.0.0, Git best practices, token-efficient diff inspection, and **file-by-file (1 per 1) atomic commit prioritization**.
 
+## Direct Trigger & Explicit Mode Selection
+Skill ini dapat dipanggil langsung bersamaan dengan pilihan mode eksekusi instan tanpa perlu tahap tanya-jawab:
+- **Trigger Mode A (Atomic / 1 per 1)**:
+  - Kata kunci: `commit A`, `commit 1 per 1`, `commit 1/1`, `atomic commit`, `ka-git-commit A`, `/ka-git-commit A`
+  - Perilaku: **LANGSUNG EKSEKUSI COMMIT SATU PER SATU** untuk setiap file yang berubah tanpa konfirmasi lagi.
+- **Trigger Mode B (Combined / All)**:
+  - Kata kunci: `commit B`, `commit all`, `commit gabung`, `commit semua`, `ka-git-commit B`, `/ka-git-commit B`
+  - Perilaku: **LANGSUNG EKSEKUSI SINGLE COMBINED COMMIT** menggabungkan semua perubahan menjadi 1 commit tanpa konfirmasi lagi.
+- **Trigger Default (Tanpa Opsi Mode)**:
+  - Kata kunci: `/ka-git-commit`, `buat commit`, `commit`
+  - Perilaku: Jika hanya 1 file berubah -> langsung eksekusi Mode A. Jika >1 file berubah -> sajikan draf Mode A (1 per 1) dan tawarkan opsi A atau B.
+
 ## Core Objectives
 1. **File-by-File & Atomic Commit First**: Selalu utamakan memecah perubahan menjadi commit per file (1 per 1) atau unit perubahan terkecil yang mandiri, agar riwayat commit bersih, mudah di-review, dan mudah di-revert.
-2. **Auto-Commit for Single File**: Jika hanya ada 1 file yang mengalami perubahan (modified/untracked), **LANGSUNG EKSEKUSI COMMIT** menggunakan format Mode A tanpa perlu meminta konfirmasi atau bertanya ke user.
+2. **Auto-Commit for Explicit Mode or Single File**:
+   - Jika pengguna memicu dengan mode spesifik (`commit A` / `commit 1/1` / `commit B` / `commit all`), **LANGSUNG EKSEKUSI COMMIT** sesuai mode yang diminta tanpa meminta konfirmasi lagi.
+   - Jika hanya ada 1 file yang mengalami perubahan (modified/untracked), **LANGSUNG EKSEKUSI COMMIT** menggunakan format Mode A tanpa perlu meminta konfirmasi.
 3. **Accurate Diff Analysis**: Inspect staged changes (or unstaged when nothing is staged) efficiently without exhausting token budgets.
 4. **Intelligent Ticket & Scope Extraction**: Parse ticket keys (Jira, Linear, GitHub Issues) from branch names and determine concise subsystem scopes.
 5. **Semantic Classification**: Choose the exact Conventional Commit type (`feat`, `fix`, `refactor`, `perf`, `docs`, `style`, `test`, `build`, `ci`, `chore`, `revert`).
@@ -105,8 +119,16 @@ Analyze changes for each file individually:
 
 ## Output Template & Modes
 
-- **Jika Hanya 1 File Diubah**: Langsung jalankan perintah commit Mode A (atomic commit) tanpa meminta konfirmasi terlebih dahulu, lalu tampilkan ringkasan hasil commit.
-- **Jika Lebih Dari 1 File Diubah**: Selalu utamakan penyajian **Mode A: File-by-File Atomic Commits (1 per 1)** secara default, lalu sertakan **Mode B: Single Combined Commit** hanya sebagai opsi alternatif.
+- **Jika Dipicu Dengan Mode Eksplisit (Mode A / commit 1 per 1 / commit 1/1)**:
+  - **LANGSUNG EKSEKUSI** urutan commit Mode A (per-file satu per satu) secara otomatis tanpa menunggu respon/konfirmasi user.
+  - Tampilkan ringkasan commit yang berhasil dibuat.
+- **Jika Dipicu Dengan Mode Eksplisit (Mode B / commit all / commit gabung)**:
+  - **LANGSUNG EKSEKUSI** commit Mode B (seluruh file digabung dalam 1 commit) secara otomatis tanpa menunggu konfirmasi user.
+  - Tampilkan ringkasan commit yang berhasil dibuat.
+- **Jika Hanya 1 File Diubah**:
+  - Langsung jalankan perintah commit Mode A (atomic commit) tanpa meminta konfirmasi terlebih dahulu, lalu tampilkan ringkasan hasil commit.
+- **Jika Lebih Dari 1 File Diubah (Tanpa Opsi Mode Tertentu)**:
+  - Sajikan **Mode A: File-by-File Atomic Commits (1 per 1)** secara default, lalu sertakan **Mode B: Single Combined Commit** sebagai opsi alternatif, dan tanyakan pilihan kepada user.
 
 ### Mode A: File-by-File Atomic Commits (Utamakan / Default)
 Sajikan draf commit dan perintah eksekusi terpisah secara berurutan untuk setiap file:
