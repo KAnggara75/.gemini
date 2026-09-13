@@ -70,6 +70,7 @@ format_tokens() {
   read -r CONV_ID
   read -r WS_DIR
   read -r COLS
+  read -r TRANSCRIPT_PATH
 } <<< "$(
   echo "$INPUT_JSON" | jq -r '
     (.agent_state // "idle"),
@@ -86,8 +87,9 @@ format_tokens() {
     (.conversation_title // .conversation_name // .title // ""),
     (.conversation_id // .session_id // ""),
     (.workspace.project_dir // .workspace.current_dir // .cwd // ""),
-    (.terminal_width // 80)
-  ' 2>/dev/null || printf "idle\n0\n0\n0\n\nfalse\nfalse\n0\n0\n0\n\n\n\n\n80\n"
+    (.terminal_width // 80),
+    (.transcript_path // "")
+  ' 2>/dev/null || printf "idle\n0\n0\n0\n\nfalse\nfalse\n0\n0\n0\n\n\n\n\n80\n\n"
 )"
 
 # ─── Check Exit State or Save Cache ──────────────────────────────────────────
@@ -217,6 +219,92 @@ else
   SYNC_FMT="${FG_BRIGHT_YELLOW}⚠️ unsynced${R}"
 fi
 
+# ─── Active Skill & MCP Detection ─────────────────────────────────────────────
+ACTIVE_SKILL=""
+ACTIVE_MCP=""
+
+if [ -n "$CONV_ID" ]; then
+  CACHE_FILE="/tmp/antigravity_skill_mcp_${CLEAN_ID}.json"
+  NOW_SEC=$(date +%s)
+  LAST_CHECK=$(cat "${CACHE_FILE}.ts" 2>/dev/null || echo 0)
+
+  # Caching selama 2 detik agar pembacaan statusline tetap super ringan
+  if [ -f "$CACHE_FILE" ] && [ $((NOW_SEC - LAST_CHECK)) -lt 2 ]; then
+    read -r ACTIVE_SKILL ACTIVE_MCP < "$CACHE_FILE" 2>/dev/null || true
+  else
+    TR_CANDIDATES=(
+      "$TRANSCRIPT_PATH"
+      "${HOME}/.gemini/antigravity-cli/brain/${CONV_ID}/.system_generated/logs/transcript.jsonl"
+      "${HOME}/.gemini/antigravity/brain/${CONV_ID}/.system_generated/logs/transcript.jsonl"
+    )
+    ACTUAL_TR=""
+    for cand in "${TR_CANDIDATES[@]}"; do
+      if [ -n "$cand" ] && [ -f "$cand" ]; then
+        ACTUAL_TR="$cand"
+        break
+      fi
+    done
+
+    if [ -n "$ACTUAL_TR" ]; then
+      INFO=$(python3 -c '
+import json, sys
+
+tpath = sys.argv[1]
+try:
+    with open(tpath, "rb") as f:
+        lines = f.readlines()[-160:]
+    last_input_idx = -1
+    last_user_content = ""
+    for idx, line in enumerate(lines):
+        try:
+            d = json.loads(line.decode("utf-8", errors="ignore"))
+            if d.get("type") == "USER_INPUT":
+                last_input_idx = idx
+                last_user_content = d.get("content", "")
+        except: pass
+
+    active_skill = "-"
+    if "<SKILL>The user has explicitly invoked the (" in last_user_content:
+        active_skill = last_user_content.split("<SKILL>The user has explicitly invoked the (")[1].split(")")[0]
+
+    active_mcp = "-"
+    if last_input_idx != -1:
+        for line in lines[last_input_idx:]:
+            try:
+                d = json.loads(line.decode("utf-8", errors="ignore"))
+                for tc in d.get("tool_calls", []):
+                    if tc.get("name") == "call_mcp_tool":
+                        s = tc.get("args", {}).get("ServerName", "").strip("\"'\''")
+                        if s: active_mcp = s
+                    elif tc.get("name", "").startswith("mcp_"):
+                        active_mcp = tc["name"].replace("mcp_", "").split("_")[0]
+            except: pass
+    print(f"{active_skill} {active_mcp}")
+except Exception:
+    print("- -")
+' "$ACTUAL_TR" 2>/dev/null || echo "- -")
+
+      ACTIVE_SKILL=$(echo "$INFO" | awk '{print $1}')
+      ACTIVE_MCP=$(echo "$INFO" | awk '{print $2}')
+      echo "${ACTIVE_SKILL:--} ${ACTIVE_MCP:--}" > "$CACHE_FILE" 2>/dev/null || true
+      echo "$NOW_SEC" > "${CACHE_FILE}.ts" 2>/dev/null || true
+    fi
+  fi
+fi
+
+if [ -n "$ACTIVE_SKILL" ] && [ "$ACTIVE_SKILL" != "-" ] && [ "$ACTIVE_SKILL" != "none" ]; then
+  SKILL_BADGE="${FG_GRAY} ╱ ${FG_BRIGHT_CYAN}⚡ ${ACTIVE_SKILL}${R}"
+else
+  SKILL_BADGE="${FG_GRAY} ╱ ⚡ -${R}"
+fi
+
+if [ -n "$ACTIVE_MCP" ] && [ "$ACTIVE_MCP" != "-" ] && [ "$ACTIVE_MCP" != "none" ]; then
+  MCP_BADGE="${FG_GRAY} ╱ ${FG_BRIGHT_YELLOW}🔌 ${ACTIVE_MCP}${R}"
+else
+  MCP_BADGE="${FG_GRAY} ╱ 🔌 -${R}"
+fi
+
+
 
 # ─── Context Bar (10 segments) ───────────────────────────────────────────────
 BAR_LEN=10
@@ -284,8 +372,9 @@ fi
 DOT="${FG_GRAY} · ${R}"
 
 # ─── Output Layout ───────────────────────────────────────────────────────────
-LINE1="${S}${C}${M}${V}"
+LINE1="${S}${C}${M}${SKILL_BADGE}${MCP_BADGE}${V}"
 LINE2="${CTX}${DOT}${ART_FMT}${DOT}${SUB_FMT}${DOT}${BG_FMT}${DOT}${SB}${DOT}${SYNC_FMT}"
+
 
 
 if [ "$COLS" -ge 120 ]; then
