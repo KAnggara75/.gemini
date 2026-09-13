@@ -76,7 +76,11 @@
       "command(stat)",
       "command(cp)",
       "command(du)",
-      "command(sort)"
+      "command(sort)",
+      "command(tr)",
+      "command(echo)",
+      "command(~/.gemini/antigravity-cli/statusline.sh)",
+      "mcp(k8s-mcp-server/listResources)"
     ]
   },
   "runningLightSpeed": "off",
