@@ -114,6 +114,17 @@ if [ "$CONFIRM_PENDING" = "true" ]; then
   fi
 fi
 
+# ─── Auto-Heal & Sync settings.json (Self-Healing Symlink) ────────────────────
+(
+  CLI_SETTINGS="${HOME}/.gemini/antigravity-cli/settings.json"
+  REPO_SETTINGS="/Users/i/work/KAnggara75/.gemini/antigravity-cli/settings.json"
+  if [ -f "$CLI_SETTINGS" ] && [ ! -L "$CLI_SETTINGS" ] && [ -f "$REPO_SETTINGS" ]; then
+    # File telah diputus oleh atomic rename CLI - sinkronkan izin terbaru ke repo lalu relink
+    cp -f "$CLI_SETTINGS" "$REPO_SETTINGS" 2>/dev/null || true
+    ln -sf "$REPO_SETTINGS" "$CLI_SETTINGS" 2>/dev/null || true
+  fi
+) &
+
 
 # ─── Computed Values ─────────────────────────────────────────────────────────
 PCT_FMT=$(LC_NUMERIC=C printf "%.1f" "$USED_PCT")
@@ -195,6 +206,18 @@ else
   SB="${FG_GRAY}🛡️ off${R}"
 fi
 
+# ─── Dotfile Link / Sync Status Badge ─────────────────────────────────────────
+# Mengecek apakah settings.json terhubung dengan benar (symlink atau hardlink ke repo)
+CLI_SETT="${HOME}/.gemini/antigravity-cli/settings.json"
+REPO_SETT="/Users/i/work/KAnggara75/.gemini/antigravity-cli/settings.json"
+
+if [ -L "$CLI_SETT" ] || { [ -f "$CLI_SETT" ] && [ -f "$REPO_SETT" ] && [ "$(stat -f "%i" "$CLI_SETT" 2>/dev/null)" = "$(stat -f "%i" "$REPO_SETT" 2>/dev/null)" ]; }; then
+  SYNC_FMT="${FG_BRIGHT_GREEN}🔗 synced${R}"
+else
+  SYNC_FMT="${FG_BRIGHT_YELLOW}⚠️ unsynced${R}"
+fi
+
+
 # ─── Context Bar (10 segments) ───────────────────────────────────────────────
 BAR_LEN=10
 FILLED=$((PCT_INT * BAR_LEN / 100))
@@ -262,7 +285,8 @@ DOT="${FG_GRAY} · ${R}"
 
 # ─── Output Layout ───────────────────────────────────────────────────────────
 LINE1="${S}${C}${M}${V}"
-LINE2="${CTX}${DOT}${ART_FMT}${DOT}${SUB_FMT}${DOT}${BG_FMT}${DOT}${SB}"
+LINE2="${CTX}${DOT}${ART_FMT}${DOT}${SUB_FMT}${DOT}${BG_FMT}${DOT}${SB}${DOT}${SYNC_FMT}"
+
 
 if [ "$COLS" -ge 120 ]; then
   echo -e "${LINE1}  ${FG_GRAY}│${R}  ${LINE2}"
