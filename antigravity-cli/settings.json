@@ -28,6 +28,7 @@
       "command(head)",
       "command(node -e)",
       "command(podman)",
+      "command(bash -c)",
       "command(python3 -c)",
       "command(./mvnw)",
       "command(git log)",
@@ -59,7 +60,23 @@
       "command(jq)",
       "command(osascript)",
       "command(bun test)",
-      "command(bun run build)"
+      "command(bun run build)",
+      "command(go mod verify)",
+      "command(go mod tidy)",
+      "command(pre-commit)",
+      "command(git ls-files)",
+      "command(git update-index)",
+      "read_url(github.com)",
+      "command(tail)",
+      "command(git grep)",
+      "read_url(raw.githubusercontent.com)",
+      "command(./proto/convert.sh)",
+      "command(git tag)",
+      "command(git describe)",
+      "command(stat)",
+      "command(cp)",
+      "command(du)",
+      "command(sort)"
     ]
   },
   "runningLightSpeed": "off",
@@ -95,9 +112,10 @@
     "/Users/i/Pictures/EDay/Pictures",
     "/Users/i/work/aodb",
     "/Users/i/work/jira",
-    "/Users/i/work/KAnggara75/.gemini",
     "/Users/i/work/aops/anuitas",
-    "/Users/i/work/KAnggara75/2dto"
+    "/Users/i/work/KAnggara75/2dto",
+    "/Users/i/work/PakaiWA/pakaiwa-platform",
+    "/Users/i/.gemini/antigravity-cli"
   ],
   "useG1Credits": true
 }
