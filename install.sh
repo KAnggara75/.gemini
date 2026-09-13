@@ -103,7 +103,6 @@ echo "[6/6] Setting up git skip-worktree..."
 
 # Protect against accidental local leaks
 if git -C "${REPO_DIR}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-  git -C "${REPO_DIR}" update-index --skip-worktree antigravity-cli/settings.json 2>/dev/null || true
   git -C "${REPO_DIR}" update-index --skip-worktree config/config.json 2>/dev/null || true
   git -C "${REPO_DIR}" update-index --skip-worktree config/mcp_config.json 2>/dev/null || true
   echo "  [SECURED] Git skip-worktree enabled for local config files."
