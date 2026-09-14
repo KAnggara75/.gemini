@@ -60,6 +60,22 @@
       "env": {
         "POSTMAN_API_KEY": "YOUR_POSTMAN_API_KEY"
       }
+    },
+    "jira": {
+      "command": "bunx",
+      "args": [
+        "-y",
+        "mcp-jira"
+      ],
+      "env": {
+        "JIRA_BASE_URL": "https://your-domain.atlassian.net",
+        "JIRA_HOST": "https://your-domain.atlassian.net",
+        "JIRA_URL": "https://your-domain.atlassian.net",
+        "JIRA_EMAIL": "your-email@example.com",
+        "JIRA_USER_EMAIL": "your-email@example.com",
+        "JIRA_API_TOKEN": "YOUR_JIRA_API_TOKEN",
+        "JIRA_API_KEY": "YOUR_JIRA_API_KEY"
+      }
     }
   }
 }

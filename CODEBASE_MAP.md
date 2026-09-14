@@ -27,7 +27,7 @@
 - **Responsibility**: Konfigurasi global lintas tool Gemini / Antigravity, plugin, manifest impor, dan konfigurasi Model Context Protocol (MCP).
 - **Entry / Key Files**:
   - [`config/config.json`](file:///Users/i/work/KAnggara75/.gemini/config/config.json) — Konfigurasi user tingkat lanjut (lebar percakapan, tema, remote control hostname, dan unsandboxed permissions).
-  - [`config/mcp_config.json`](file:///Users/i/work/KAnggara75/.gemini/config/mcp_config.json) — Pendaftaran dan konfigurasi runtime MCP server (`context7`, `podman-mcp`, `git`, `memory`, `filesystem`, `k8s-mcp-server`, `postman`).
+  - [`config/mcp_config.json`](file:///Users/i/work/KAnggara75/.gemini/config/mcp_config.json) — Pendaftaran dan konfigurasi runtime MCP server (`context7`, `podman-mcp`, `git`, `memory`, `filesystem`, `k8s-mcp-server`, `postman`, `jira`).
   - [`config/agents/devops/agent.md`](file:///Users/i/work/KAnggara75/.gemini/config/agents/devops/agent.md) — Definisi custom subagent role DevOps.
   - [`config/agents/code-reviewer/agent.md`](file:///Users/i/work/KAnggara75/.gemini/config/agents/code-reviewer/agent.md) — Definisi custom subagent role Senior Code Reviewer (Java & Go).
   - `config/import_manifest.json` — Manifest pelacakan instalasi plugin eksternal (misal: `antigravity-cli-wakatime`).

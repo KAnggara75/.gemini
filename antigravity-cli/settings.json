@@ -1,6 +1,6 @@
 {
   "allowNonWorkspaceAccess": true,
-  "model": "Gemini 3.8 Flash (Medium)",
+  "model": "Gemini 3.8 Flash (Low)",
   "notifications": true,
   "permissions": {
     "allow": [
@@ -105,7 +105,11 @@
       "write_file(*)",
       "command(date)",
       "command(npm view)",
-      "command(bunx @postman/postman-mcp-server --help)"
+      "command(bunx @postman/postman-mcp-server --help)",
+      "mcp(postman/getWorkspaces)",
+      "mcp(postman/getCollections)",
+      "mcp(postman/getEnvironments)",
+      "command(/Applications/Ghostty.app/Contents/MacOS/ghostty)"
     ]
   },
   "runningLightSpeed": "off",
@@ -146,7 +150,8 @@
     "/Users/i/work/PakaiWA/pakaiwa-platform",
     "/Users/i/.gemini/antigravity-cli",
     "/Users/i/work/local",
-    "/Users/i/work/podmans"
+    "/Users/i/work/podmans",
+    "/Users/i/work/ifpo/pps"
   ],
   "useG1Credits": true
 }
