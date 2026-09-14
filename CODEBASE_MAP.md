@@ -16,7 +16,7 @@
 - **Responsibility**: Pengaturan khusus terminal CLI, pemantau statusline tmux, dan updater judul jendela.
 - **Entry / Key Files**:
   - [`antigravity-cli/settings.json`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/settings.json) — Whitelist perizinan tool/command (`permissions.allow`), trusted workspaces, model AI, dan path command runner.
-  - [`antigravity-cli/statusline.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/statusline.sh) — Script statusline dua baris responsif; memonitor token usage, git branch, task/subagent count, self-healing symlink, notifikasi audio, serta status aktif Skill/MCP.
+  - [`antigravity-cli/statusline.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/statusline.sh) — Script statusline responsif (single line/multi-line); memonitor token usage, git branch, task/subagent count, self-healing symlink, notifikasi audio prompt, serta status real-time Skill/MCP.
   - [`antigravity-cli/title.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/title.sh) — Script formatting judul jendela terminal / tmux pane berbasis agent state dan nama workspace.
 - **Dependencies**: `jq`, `afplay` (macOS), `osascript`, `bc`, `sqlite3`, `tmux`.
 - **Consumers**: Antigravity CLI runtime loop via setting `statusLine` dan `title`.
@@ -24,11 +24,13 @@
 ---
 
 ## `config/`
-- **Responsibility**: Konfigurasi global lintas tool Gemini / Antigravity dan konfigurasi Model Context Protocol (MCP).
+- **Responsibility**: Konfigurasi global lintas tool Gemini / Antigravity, plugin, manifest impor, dan konfigurasi Model Context Protocol (MCP).
 - **Entry / Key Files**:
   - [`config/config.json`](file:///Users/i/work/KAnggara75/.gemini/config/config.json) — Konfigurasi user tingkat lanjut (lebar percakapan, tema, remote control hostname, dan unsandboxed permissions).
   - [`config/mcp_config.json`](file:///Users/i/work/KAnggara75/.gemini/config/mcp_config.json) — Pendaftaran dan konfigurasi runtime MCP server (`context7`, `podman-mcp`, `git`, `memory`, `filesystem`, `k8s-mcp-server`).
   - [`config/agents/devops/agent.md`](file:///Users/i/work/KAnggara75/.gemini/config/agents/devops/agent.md) — Definisi custom subagent role DevOps.
+  - `config/import_manifest.json` — Manifest pelacakan instalasi plugin eksternal (misal: `antigravity-cli-wakatime`).
+  - `config/plugins/` — Direktori plugin modular Antigravity CLI.
 - **Dependencies**: `bunx`, binary MCP server lokal, API remote endpoint Context7.
 - **Consumers**: Antigravity core engine dan MCP client gateway.
 
