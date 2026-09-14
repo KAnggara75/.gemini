@@ -187,13 +187,27 @@ if [ -n "$NAME_TO_SHOW" ]; then
   C="${FG_GRAY} ╱ ${FG_BRIGHT_CYAN}💬 ${CONV_DISPLAY}${R}"
 fi
 
-# ─── VCS Branch ──────────────────────────────────────────────────────────────
+# ─── VCS / Git Status (Color-coded status: Green=Clean, Yellow/Red=Dirty) ───
 V=""
+if [ -z "$VCS_BRANCH" ] && [ -n "$WS_DIR" ] && [ -d "$WS_DIR" ]; then
+  if git -C "$WS_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    VCS_BRANCH=$(git -C "$WS_DIR" branch --show-current 2>/dev/null || true)
+    if [ -z "$VCS_BRANCH" ]; then
+      VCS_BRANCH=$(git -C "$WS_DIR" rev-parse --short HEAD 2>/dev/null || true)
+    fi
+    if [ -n "$(git -C "$WS_DIR" status --porcelain 2>/dev/null)" ]; then
+      VCS_DIRTY="true"
+    else
+      VCS_DIRTY="false"
+    fi
+  fi
+fi
+
 if [ -n "$VCS_BRANCH" ]; then
   if [ "$VCS_DIRTY" = "true" ]; then
-    V="${FG_GRAY} ╱ ${FG_BRIGHT_RED} ${VCS_BRANCH}${FG_BRIGHT_YELLOW}*${R}"
+    V="${FG_GRAY} ╱ ${FG_BRIGHT_YELLOW} ${VCS_BRANCH}${R}"
   else
-    V="${FG_GRAY} ╱ ${FG_BRIGHT_BLUE} ${VCS_BRANCH}${R}"
+    V="${FG_GRAY} ╱ ${FG_BRIGHT_GREEN} ${VCS_BRANCH}${R}"
   fi
 fi
 
