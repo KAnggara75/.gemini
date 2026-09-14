@@ -40,6 +40,11 @@ graph TD
         MemoryMCP[Memory MCP / memory.jsonl]
     end
 
+    subgraph Subagents & Roles
+        DevOpsAgent[DevOps Engineer]
+        CodeReviewerAgent[Code Reviewer - Java & Go]
+    end
+
     Installer -->|ln -sf / ln -f| TargetDir
     RepoConfig --> Installer
     CLI --> Statusline
@@ -59,6 +64,12 @@ graph TD
     MCPConfig --> PodmanMCP
     MCPConfig --> K8sMCP
     MCPConfig --> MemoryMCP
+
+    Core --> DevOpsAgent
+    Core --> CodeReviewerAgent
+    DevOpsAgent --> PodmanMCP
+    DevOpsAgent --> K8sMCP
+    CodeReviewerAgent --> Context7
 ```
 
 ---

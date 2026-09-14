@@ -16,6 +16,7 @@ Repository `.gemini` adalah repositori manajemen konfigurasi (*dotfiles* dan *cu
   - Terminal statusline dan audio notification hooks macOS.
   - Script installer dan symlink/hardlink orchestrator (`install.sh`).
   - Custom skills yang dipasang ke `~/.agents/skills/`.
+  - Definisi custom subagent role (`config/agents/devops`, `config/agents/code-reviewer`).
 - **Out-of-Scope**:
   - Kode sumber binary engine Antigravity itu sendiri.
   - Binary binary eksternal seperti `rtk`, `podman`, `kubectl`, atau Node runtime (diasumsikan sudah terpasang di host macOS).
@@ -24,9 +25,12 @@ Repository `.gemini` adalah repositori manajemen konfigurasi (*dotfiles* dan *cu
 
 ## 3. Main Actors & Surfaces
 1. **Developer (User)**: Menjalankan perintah terminal, memicu slash commands (`/ka-*`), dan menyetujui izin perizinan kritis.
-2. **Antigravity AI Agent**: Model AI (Gemini 3.8 Flash / Pro) yang mengeksekusi tool, memprogram, dan membaca instruksi workspace dari `GEMINI.md`.
-3. **RTK (Rust Token Killer)**: Proxy CLI lokal yang memfilter dan mengompres output perintah terminal standar untuk menghemat token.
-4. **MCP Servers**: Daemon/proses yang menyediakan kapabilitas tambahan (k8s cluster inspection, container status, git diffing, dan memory indexing).
+2. **Primary AI Agent**: Model AI (Gemini 3.8 Flash / Pro) yang bertindak sebagai pair programmer utama di workspace.
+3. **Specialized Subagents**:
+   - **`devops`**: Subagent operasional kontainer (Podman), klaster k8s, dan pipeline CI/CD.
+   - **`code-reviewer`**: Subagent peninjau kode statis tingkat lanjut khusus Java (Quarkus, Kafka, REST Client) dan Go.
+4. **RTK (Rust Token Killer)**: Proxy CLI lokal yang memfilter dan mengompres output perintah terminal standar untuk menghemat token.
+5. **MCP Servers**: Daemon/proses yang menyediakan kapabilitas tambahan (k8s cluster inspection, container status, git diffing, dan memory indexing).
 
 ---
 

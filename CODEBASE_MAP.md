@@ -29,6 +29,7 @@
   - [`config/config.json`](file:///Users/i/work/KAnggara75/.gemini/config/config.json) — Konfigurasi user tingkat lanjut (lebar percakapan, tema, remote control hostname, dan unsandboxed permissions).
   - [`config/mcp_config.json`](file:///Users/i/work/KAnggara75/.gemini/config/mcp_config.json) — Pendaftaran dan konfigurasi runtime MCP server (`context7`, `podman-mcp`, `git`, `memory`, `filesystem`, `k8s-mcp-server`).
   - [`config/agents/devops/agent.md`](file:///Users/i/work/KAnggara75/.gemini/config/agents/devops/agent.md) — Definisi custom subagent role DevOps.
+  - [`config/agents/code-reviewer/agent.md`](file:///Users/i/work/KAnggara75/.gemini/config/agents/code-reviewer/agent.md) — Definisi custom subagent role Senior Code Reviewer (Java & Go).
   - `config/import_manifest.json` — Manifest pelacakan instalasi plugin eksternal (misal: `antigravity-cli-wakatime`).
   - `config/plugins/` — Direktori plugin modular Antigravity CLI.
 - **Dependencies**: `bunx`, binary MCP server lokal, API remote endpoint Context7.

@@ -1,6 +1,6 @@
 {
   "allowNonWorkspaceAccess": true,
-  "model": "Gemini 3.8 Flash (Low)",
+  "model": "Gemini 3.8 Flash (Medium)",
   "notifications": true,
   "permissions": {
     "allow": [
@@ -88,7 +88,12 @@
       "command(touch)",
       "command(brew info)",
       "command(open)",
-      "command(pgrep)"
+      "command(pgrep)",
+      "command(mvn compile-quarkus-quick)",
+      "command(readlink)",
+      "command(pwd)",
+      "command(ln)",
+      "command(sleep)"
     ]
   },
   "runningLightSpeed": "off",
@@ -128,7 +133,8 @@
     "/Users/i/work/KAnggara75/2dto",
     "/Users/i/work/PakaiWA/pakaiwa-platform",
     "/Users/i/.gemini/antigravity-cli",
-    "/Users/i/work/local"
+    "/Users/i/work/local",
+    "/Users/i/work/podmans"
   ],
   "useG1Credits": true
 }

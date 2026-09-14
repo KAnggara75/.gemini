@@ -1,6 +1,6 @@
 ---
 name: ka-context
-description: "Membangun baseline project memory dan dokumentasi arsitektur dari repository kode. Menganalisis struktur direktori, dependency manifest, runtime entry points, pola arsitektur, concurrency model, data boundary, dan technical debt. Menghasilkan CODEBASE_MAP.md, ARCHITECTURE.md, PROJECT_CONTEXT.md, DECISIONS.md, dan TODO.md dengan efisiensi token via RTK."
+description: "Bootstrap project memory and architectural documentation from an active codebase. Analyzes directory layout, dependency manifests, runtime entry points, architectural patterns, concurrency models, data boundaries, and technical debt. Generates CODEBASE_MAP.md, ARCHITECTURE.md, PROJECT_CONTEXT.md, DECISIONS.md, and TODO.md with token-efficient RTK inspection."
 user-invocable: true
 license: MIT
 compatibility: Designed for Antigravity AI, Claude Code, and git-based repositories.
@@ -13,37 +13,37 @@ allowed-tools: Bash(git:*) Bash(rtk:*) Read Grep Glob
 
 # Skill: Bootstrap Project Memory & Documentation
 
-Anda bertindak sebagai **Staff Software Architect** yang bertugas membangun *baseline project memory* dari repository aktif secara grounded, token-efficient, dan faktual.
+You act as a **Staff Software Architect** tasked with building grounded, token-efficient, and factual *baseline project memory* from an active repository.
 
-## Tujuan Utama
-1. Memahami struktur, relasi modul, dan arsitektur repository dari bukti kode nyata (*evidence-based*).
-2. Menghasilkan dokumentasi terstruktur yang grounded pada source code tanpa mengarang (*no hallucinations*).
-3. Mengidentifikasi *knowledge gap* secara tajam (maksimal 5 pertanyaan actionable).
-4. Mengabadikan keputusan developer ke dalam ADR tanpa menimpa keputusan sebelumnya (*append-only*).
-5. Membangun fondasi dokumentasi agar AI agent berikutnya tidak perlu melakukan discovery ulang dari awal.
+## Core Objectives
+1. Understand architecture, module relationships, and data flow from empirical code evidence (*evidence-based*).
+2. Produce structured documentation grounded in source code without hallucination (*no hallucinations*).
+3. Identify sharp, actionable knowledge gaps (maximum 5 critical questions).
+4. Record architectural decisions into ADRs without overwriting historical decisions (*append-only*).
+5. Establish a baseline memory so subsequent AI agents do not need to rediscover the system from scratch.
 
 ---
 
 ## Core Principles
 
-- **Single Source of Truth**: Repository adalah sumber fakta teknis. Developer adalah sumber keputusan bisnis & batasan yang tidak tercermin di kode.
-- **Strict Evidence Classification**: Setiap klaim teknis wajib diklasifikasikan:
-  - `CONFIRMED`: Terbukti secara eksplisit dari kode, manifest, konfigurasi, atau CI/CD.
-  - `INFERRED`: Kesimpulan berbasis bukti tidak langsung (sebutkan indikasinya).
-  - `UNKNOWN`: Tidak ditemukan bukti di repository (tanyakan ke developer jika krusial).
-- **Anti-Hallucination**: Dilarang menyimpulkan architecture pattern hanya dari nama direktori (misal: ada folder `controllers/` belum tentu MVC murni).
-- **Token Efficiency First**: Manfaatkan `rtk` bila tersedia (`rtk git ...`), utamakan stat/depth-limited scans, dan hindari membaca file massal/dump tanpa filter.
-- **Non-Destructive**: Dilarang mengubah source code aplikasi. Hanya file dokumentasi target yang boleh dibuat atau diperbarui.
+- **Single Source of Truth**: The repository is the source of technical truth. The developer is the source of business context and constraints not evident in code.
+- **Strict Evidence Classification**: Every technical assertion must be classified:
+  - `CONFIRMED`: Explicitly evidenced by source code, manifests, configs, or CI/CD pipelines.
+  - `INFERRED`: Deduced from indirect indicators (specify evidence).
+  - `UNKNOWN`: No evidence found in repository (inquire with developer if crucial).
+- **Anti-Hallucination**: Never assume architecture patterns solely based on directory names (e.g., having `controllers/` does not guarantee pure MVC).
+- **Token Efficiency First**: Use `rtk` when available (`rtk git ...`), prefer shallow depth-limited scans, and avoid dumping raw files unconditionally.
+- **Non-Destructive**: Do not alter application code. Only designated documentation files may be created or updated.
 
 ---
 
 ## Deliverables Checklist
-Skill ini menghasilkan/memperbarui 5 dokumen inti di root repository:
-1. `CODEBASE_MAP.md` — Peta navigasi modul, tanggung jawab, dependencies, dan consumers.
-2. `ARCHITECTURE.md` — Diagram komponen, request flow, concurrency, error handling, dan data boundaries.
-3. `PROJECT_CONTEXT.md` — Konteks tingkat tinggi, tujuan sistem, domain concepts, dan batasan.
-4. `DECISIONS.md` — Architecture Decision Records (ADR) berbasis interview/keputusan developer.
-5. `TODO.md` — Inventarisasi technical debt, FIXME/TODO dari source code, dan immediate tasks.
+This skill produces and maintains 5 core documents at the repository root:
+1. `CODEBASE_MAP.md` — Module navigation map, responsibilities, dependencies, and consumers.
+2. `ARCHITECTURE.md` — Component diagrams, request lifecycles, concurrency models, error boundaries, and telemetry.
+3. `PROJECT_CONTEXT.md` — High-level purpose, domain glossary, system boundaries, and runtime constraints.
+4. `DECISIONS.md` — Architecture Decision Records (ADRs) capturing developer decisions (append-only).
+5. `TODO.md` — Inventory of technical debt, code annotations (TODO/FIXME), and immediate improvements.
 
 ---
 
@@ -51,67 +51,65 @@ Skill ini menghasilkan/memperbarui 5 dokumen inti di root repository:
 
 ### STEP 1 — Token-Efficient Codebase Discovery
 
-Lakukan eksplorasi *read-only* terarah. Selalu utamakan penghematan token:
+Perform focused, read-only discovery prioritizing token budget:
 
 #### 1.1 Directory & Layout Overview
-- Mulai dengan pemeriksaan kedalaman terbatas (depth 2–3):
+- Begin with shallow depth scans (depth 2–3):
   ```bash
   git status --short
-  # Gunakan listing direktori teratas (maksimal depth 3)
   ```
-- Identifikasi tipe repository (monorepo/polyrepo), bahasa pemrograman/runtime, build tool, dan struktur paket utama.
-- **PENTING**: Dilarang membaca isi seluruh file secara membabi buta. Lakukan *targeted inspection* hanya pada modul inti.
+- Identify repository type (monorepo/polyrepo), primary language/runtime, build tool, and package root.
 
-#### 1.2 Identify Project Artifacts & Manifests
-Prioritaskan membaca manifest dependensi dan deployment descriptor:
+#### 1.2 Inspect Project Artifacts & Manifests
+Prioritize reading dependency manifests and deployment descriptors:
 - **Go**: `go.mod`, `go.work`
 - **JVM / Java**: `pom.xml`, `build.gradle`, `build.gradle.kts`
-- **Node / JS / TS**: `package.json`, lockfiles (`bun.lockb`, `pnpm-lock.yaml`, `package-lock.json` - baca dependensi saja, jangan dump lockfile)
+- **Node / JS / TS**: `package.json` (read dependencies only; avoid dumping full lockfiles)
 - **Python**: `pyproject.toml`, `requirements.txt`, `Pipfile`
 - **Rust**: `Cargo.toml`
-- **Infra & CI/CD**: `Dockerfile`, `docker-compose.yml`, `.github/workflows/`, Helm charts, Kubernetes manifests, Makefile/Taskfile.
+- **Infra & CI/CD**: `Dockerfile`, `docker-compose.yml`, `.github/workflows/`, Helm charts, Kubernetes manifests.
 
 #### 1.3 Identify Runtime Architecture & Entry Points
-Telusuri titik masuk dan bootstrap sistem:
-- Application entry point (`main.go`, `index.ts`, `Application.java`, dsb.)
-- Inisialisasi router HTTP, gRPC server, atau message listener (Kafka/RabbitMQ/Redis)
-- Dependency injection / wiring container
-- Database connection pools, migrations, dan cache layer
-- Background workers, cron schedulers, dan observability setup (OpenTelemetry, Prometheus, logging middleware)
+Trace system entry points and bootstrap wiring:
+- Application entry points (`main.go`, `index.ts`, `Application.java`, etc.)
+- Router initialization (HTTP, gRPC, or message consumers like Kafka/RabbitMQ)
+- Dependency injection and component wiring containers
+- Database connection pools, migrations, and cache layers
+- Background workers, cron schedulers, and observability middleware
 
 #### 1.4 Architectural Pattern Evidence
-Tentukan pola arsitektur berdasarkan bukti konkret kode:
-- Layered Architecture, Clean Architecture, Hexagonal / Ports & Adapters, Event-Driven, atau Modular Monolith.
-- Cantumkan file bukti pendukung untuk setiap pola yang dinyatakan `CONFIRMED`. Jika hanya dugaan, beri label `INFERRED`.
+Identify patterns from concrete codebase evidence:
+- Layered Architecture, Clean Architecture, Hexagonal / Ports & Adapters, Event-Driven, or Modular Monolith.
+- Tag each identified pattern with `CONFIRMED` (with file path references) or `INFERRED`.
 
 ---
 
 ### STEP 2 — Generate / Update `CODEBASE_MAP.md`
 
-Petakan setiap direktori atau modul kunci ke dalam format standar:
+Map each primary directory or subsystem into standard format:
 
 ```markdown
 # Codebase Navigation Map
 
 ## <module/path>
-- **Responsibility**: <Tanggung jawab utama modul>
+- **Responsibility**: <Primary responsibility>
 - **Entry / Key Files**:
-  - `path/to/file1.ext` — <Peran file>
-  - `path/to/file2.ext` — <Peran file>
-- **Dependencies**: <Library eksternal, database, atau internal package yang dipanggil>
-- **Consumers**: <Siapa yang memanggil modul ini (HTTP Handler, Worker, dsb.)>
-- **External Integrations**: <API eksternal, Message Broker, Payment Gateway, dsb.>
-- **Key Notes**: <Catatan khusus atau keunikan implementasi>
+  - `path/to/file1.ext` — <File purpose>
+  - `path/to/file2.ext` — <File purpose>
+- **Dependencies**: <External libraries, databases, or internal packages>
+- **Consumers**: <Callers such as HTTP Handlers, Workers, or CLI>
+- **External Integrations**: <APIs, Message Brokers, Payment Gateways>
+- **Key Notes**: <Implementation quirks or notable characteristics>
 ```
 
 ---
 
 ### STEP 3 — Generate / Update `ARCHITECTURE.md`
 
-Dokumentasikan arsitektur teknis secara komprehensif:
+Document technical architecture comprehensively:
 
 #### 3.1 Component Architecture & Mermaid Diagram
-Gunakan diagram Mermaid untuk memvisualisasikan relasi komponen:
+Visualize component interactions using Mermaid:
 ```mermaid
 graph TD
     Client --> API Gateway
@@ -120,116 +118,107 @@ graph TD
 ```
 
 #### 3.2 Request & Data Flow
-Jelaskan siklus hidup request dari ingress hingga persistence (misal: `Client -> Middleware -> Router -> Handler -> Service/UseCase -> Repository/Store -> DB`).
+Explain request lifecycle from ingress to persistence.
 
 #### 3.3 Concurrency & Resource Management
-Dokumentasikan model konkurensi aktual dari source code:
-- **Go**: Pola goroutine, worker pools, channel synchronization, mutex/RWMutex, context propagation/cancellation.
-- **Java / Quarkus / Spring**: Thread model (Virtual Threads vs Platform Threads), Scope lifecycle (ApplicationScoped, RequestScoped), memory visibility, connection pool sizing.
-- **Node.js**: Event loop behavior, clustering, stream processing, asynchronous resource disposal.
-- *Aturan*: Jika model konkurensi tidak ditemukan atau bersifat default single-thread, tuliskan apa adanya tanpa mengarang.
+Document actual concurrency patterns in code:
+- **Go**: Goroutines, worker pools, channel synchronization, mutexes, context cancellation.
+- **Java / Quarkus / Spring**: Thread models (Virtual vs Platform), bean scope lifecycle, connection pool sizing.
+- **Node.js**: Event loop dynamics, stream processing, async resource cleanup.
 
 #### 3.4 Error Handling & Fault Tolerance
-Dokumentasikan mekanisme:
-- Error wrapping/propagation, sentinel errors, atau custom exception hierarchy
-- Retry policy, backoff strategy, timeout context, dan circuit breaker
-- Dead-letter queue (DLQ) atau rollback transaksi database
+Document:
+- Error wrapping, sentinel errors, or custom exception hierarchies.
+- Retry policies, timeouts, backoff strategies, circuit breakers, and transaction rollbacks.
 
 #### 3.5 Observability & Telemetry
-Dokumentasikan:
-- Structured logging format dan correlation / trace / request ID propagation
-- Metrics collector (Prometheus, Micrometer, StatsD)
-- Distributed tracing (OpenTelemetry, Jaeger, W3C TraceContext)
+Document:
+- Structured logging format and correlation / trace ID propagation.
+- Metrics collection (Prometheus, Micrometer, StatsD) and tracing (OpenTelemetry).
 
 #### 3.6 Data & Domain Boundaries
-Gambarkan batasan isolasi antara API DTO, Domain Entities, dan Database Models (apakah menggunakan adapter/mapper terpisah atau tight-coupling).
+Detail isolation between API DTOs, Domain Entities, and Database Models.
 
 ---
 
 ### STEP 4 — Identify Knowledge Gaps & Interactive Interview
 
-Sebelum menyelesaikan dokumentasi:
-1. Jawab sebanyak mungkin hal dari kode sumber dan git log.
-2. **Dilarang** menanyakan hal yang sudah jelas tercantum di repository.
-3. Kumpulkan maksimal **5 pertanyaan paling kritis dan actionable** yang tidak dapat dijawab oleh kode (misal: *business constraints, SLA, security requirements, legacy migration goals*).
+Before finalizing:
+1. Resolve as much technical context as possible from source code and git logs.
+2. Formulate at most **5 critical, actionable questions** that cannot be answered by code (e.g., business constraints, target SLA, compliance).
 
 > **PAUSE POINT**:
-> Berikan daftar pertanyaan kepada developer.
-> Tunggu jawaban developer sebelum menyelesaikan STEP 5 (DECISIONS.md) dan STEP 6 (PROJECT_CONTEXT.md).
-> *Catatan*: STEP 7 (`TODO.md`) boleh disiapkan secara paralel sambil menunggu jawaban.
+> Present questions to the developer.
+> Wait for answers before completing STEP 5 (DECISIONS.md) and STEP 6 (PROJECT_CONTEXT.md).
 
 ---
 
 ### STEP 5 — Update / Generate `DECISIONS.md` (Append-Only)
 
-Catat setiap jawaban developer dan keputusan arsitektural penting sebagai Architecture Decision Record (ADR):
-- **ATURAN WAJIB**: BACA `DECISIONS.md` yang sudah ada terlebih dahulu. **JANGAN PERNAH MENIMPA (OVERWRITE)** ADR yang sudah ada sebelumnya.
-- Selalu gunakan nomor urut berikutnya (misal: jika ada `ADR-002`, buat `ADR-003`).
+Record every developer decision as an Architecture Decision Record (ADR):
+- **MANDATORY RULE**: Always read existing `DECISIONS.md` first. **NEVER OVERWRITE** previous ADRs.
+- Always use incremental numbering (e.g., if `ADR-005` exists, create `ADR-006`).
 
-Format ADR:
+ADR Format:
 ```markdown
-## ADR-00X: <Judul Keputusan>
+## ADR-00X: <Decision Title>
 
 - **Status**: Accepted | Deprecated | Superseded by ADR-00Y
 - **Date**: YYYY-MM-DD
 - **Source**: Developer interview / Codebase evidence
-- **Context**: <Masalah atau latar belakang yang dihadapi>
-- **Decision**: <Keputusan spesifik yang diambil>
-- **Consequences**: <Dampak positif, negatif, atau trade-off yang diterima>
+- **Context**: <Problem background and motivation>
+- **Decision**: <Specific architectural choice made>
+- **Consequences**: <Positive, negative, or trade-off impacts>
 ```
 
 ---
 
 ### STEP 6 — Generate / Update `PROJECT_CONTEXT.md`
 
-Susun gambaran tingkat tinggi dari sistem:
-- **Project Purpose**: Masalah bisnis utama yang diselesaikan aplikasi.
-- **System Boundary**: Apa yang dikerjakan sistem ini vs sistem eksternal lain.
-- **Main Actors**: Pengguna, admin, scheduled bot, service account.
-- **Important Domain Concepts & Glossary**: Terminologi spesifik domain (misal: *Policy, Proposal, Endorsement, Claim*).
-- **External Systems**: Integrasi pihak ketiga, upstream & downstream services.
-- **Runtime Environment & Constraints**: OS, container runtime, memory/CPU limit, network policies.
-- **Coding Conventions & Standards**: Linter, styling, commit rules.
-- **Known Limitations**: Batasan yang diakui saat ini. Jika belum ada data, tandai:
-  `> UNKNOWN — not established yet.`
+Provide a high-level system overview:
+- **Project Purpose**: Core business problems solved.
+- **System Boundary**: In-scope responsibilities vs external services.
+- **Main Actors**: Users, admins, background services, APIs.
+- **Domain Concepts & Glossary**: Ubiquitous domain terminology.
+- **External Systems**: Upstream and downstream dependencies.
+- **Runtime Environment & Constraints**: OS, container runtimes, memory/CPU bounds.
+- **Coding Conventions & Standards**: Linters, formatting, commit rules.
+- **Known Limitations**: Explicit acknowledged boundaries (`> UNKNOWN — not established yet.` if missing).
 
 ---
 
 ### STEP 7 — Generate / Update `TODO.md`
 
-Gunakan pencarian cepat berbasis keyword (`grep_search` / `ripgrep` / regex) untuk menemukan marker di kode sumber:
-- Cari keyword: `TODO`, `FIXME`, `HACK`, `XXX`, `BUG`, `DEPRECATED`.
-- **Abaikan direktori non-source**: `vendor/`, `node_modules/`, `target/`, `dist/`, `.git/`, `bin/`.
+Search for source annotations using keywords (`TODO`, `FIXME`, `HACK`, `BUG`, `DEPRECATED`), excluding build and vendor folders.
 
-Kelompokkan output ke dalam 3 kategori:
+Structure output into 3 sections:
 ```markdown
 # Project TODO & Technical Debt
 
 ## 1. Immediate Tasks
-_Tugas atau perbaikan mendesak yang mempengaruhi reliability, correctness, atau security saat ini._
-- [ ] `path/to/file.ext:line`: Deskripsi masalah
+_Urgent tasks affecting reliability, security, or immediate execution._
+- [ ] `path/to/file.ext:line`: Issue description
 
 ## 2. Existing Code Annotations (TODO / FIXME)
-_Daftar TODO/FIXME yang tercantum langsung di dalam source code._
-- `path/to/file.ext:line`: "TODO: pesan asli"
+_Annotations found directly in source code._
+- `path/to/file.ext:line`: "TODO: message"
 
 ## 3. Technical Debt & Structural Improvements
-_Pekerjaan arsitektural/refactoring jangka panjang untuk maintainability sistem._
-- [ ] Deskripsi technical debt (disertai referensi modul terkait)
+_Long-term architectural and refactoring initiatives._
+- [ ] Technical debt description
 ```
 
 ---
 
 ### STEP 8 — Validation & Final Audit
 
-Sebelum proses bootstrap dinyatakan selesai, lakukan audit akhir:
-1. **Factual Consistency**: Pastikan tidak ada pertentangan informasi antar kelima dokumen.
-2. **No Unverified Claims**: Setiap klaim arsitektur memiliki referensi path file yang valid.
-3. **No Fabricated Business Rules**: Aturan bisnis hanya berasal dari jawaban interview developer atau spesifikasi resmi.
-4. **All Output Files Present**:
+Perform final verification:
+1. **Factual Consistency**: Verify zero conflicting statements across all 5 documents.
+2. **No Unverified Claims**: Ensure every architectural claim points to valid file paths.
+3. **All Output Files Present**:
    - `CODEBASE_MAP.md`
    - `ARCHITECTURE.md`
    - `PROJECT_CONTEXT.md`
    - `DECISIONS.md`
    - `TODO.md`
-5. Berikan ringkasan eksekutif kepada developer beserta status kelengkapan baseline project memory.
+4. Present an executive summary of the baseline memory to the developer.

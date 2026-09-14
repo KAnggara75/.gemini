@@ -78,3 +78,25 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 - **Context**: Suara notifikasi sistem macOS (`Glass.aiff`) terdengar berulang/ganda saat prompt interaksi user muncul karena `ask_question` ditangani bersamaan oleh `rtk-hook-gemini.sh` dan `notify-decision.sh`.
 - **Decision**: Mengisolasi penanganan `ask_question` secara eksklusif ke [`hooks/notify-decision.sh`](file:///Users/i/work/KAnggara75/.gemini/hooks/notify-decision.sh) dan menghapus handler `ask_question` dari [`hooks/rtk-hook-gemini.sh`](file:///Users/i/work/KAnggara75/.gemini/hooks/rtk-hook-gemini.sh) sehingga `rtk-hook-gemini.sh` murni memproses perintah terminal (`run_command` / `run_shell_command`).
 - **Consequences**: Audio prompt hanya berbunyi satu kali secara presisi setiap kali agent memerlukan keputusan atau masukan dari developer.
+
+---
+
+## ADR-008: Standarisasi Bahasa Inggris pada Definisi Subagent dan Custom Skills
+
+- **Status**: Accepted
+- **Date**: 2026-09-14
+- **Source**: Developer request
+- **Context**: Definisi agent dan custom skill sebelumnya mencampurkan bahasa Indonesia dan bahasa Inggris, yang berpotensi menimbulkan ambiguitas semantik saat dievaluasi oleh LLM foundation model internasional.
+- **Decision**: Menstandardisasi seluruh instruksi sistem, frontmatter deskripsi, dan runbook operasional pada subagent (`config/agents/`) dan custom skill (`skills/`) ke dalam bahasa Inggris profesional.
+- **Consequences**: Interoperabilitas instruksi meningkat, pemahaman model lebih konsisten, dan format laporan menjadi seragam di seluruh surface Antigravity.
+
+---
+
+## ADR-009: Spesialisasi Subagent Code Reviewer untuk Java Quarkus & Golang
+
+- **Status**: Accepted
+- **Date**: 2026-09-14
+- **Source**: Developer request
+- **Context**: Pengembang memerlukan automated code review mendalam khusus untuk ekosistem Java (Quarkus, Kafka SmallRye Reactive Messaging, MicroProfile REST Client) dan Golang, dengan fokus utama pada deteksi kebocoran memori (OOM), mitigasi NullPointerException (NPE), konkurensi aman, serta penegakan prinsip DRY.
+- **Decision**: Mengonfigurasi subagent mandiri `code-reviewer` di [`config/agents/code-reviewer/agent.md`](file:///Users/i/work/KAnggara75/.gemini/config/agents/code-reviewer/agent.md) yang mengintegrasikan checklist audit NPE, unboxing trap, reactive stream backpressure, REST client socket cleanup, dan MapStruct/shared handlers DRY enforcement.
+- **Consequences**: Analisis kode Java dan Go dapat didelegasikan secara terisolasi tanpa membebani context window percakapan utama, menghasilkan laporan review terstruktur dengan klasifikasi severity (Blocker, Major, Minor, Suggestion).
