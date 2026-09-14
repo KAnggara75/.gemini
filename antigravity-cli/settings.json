@@ -109,7 +109,8 @@
       "mcp(postman/getWorkspaces)",
       "mcp(postman/getCollections)",
       "mcp(postman/getEnvironments)",
-      "command(/Applications/Ghostty.app/Contents/MacOS/ghostty)"
+      "command(/Applications/Ghostty.app/Contents/MacOS/ghostty)",
+      "mcp(jira/jira_get_issue)"
     ]
   },
   "runningLightSpeed": "off",
