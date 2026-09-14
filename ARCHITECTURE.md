@@ -77,17 +77,18 @@ sequenceDiagram
     participant RTK as RTK Proxy / Binary
 
     Model->>Engine: Emit toolCall (e.g. run_command, ask_question)
-    Engine->>Hook: Stdin JSON payload (BeforeTool event)
     
     alt toolCall == ask_question
-        Hook->>System: Trigger afplay Glass.aiff (non-blocking)
-        Hook->>Engine: Return {"decision":"allow"}
+        Engine->>NotifyHook: Stdin JSON payload (BeforeTool event)
+        NotifyHook->>System: Trigger afplay Glass.aiff (non-blocking)
+        NotifyHook->>Engine: Return {"decision":"allow"}
     else toolCall == run_command / run_shell_command
-        Hook->>Hook: Check command against permissions.allow in settings.json
+        Engine->>RTKHook: Stdin JSON payload (BeforeTool event)
+        RTKHook->>RTKHook: Check command against permissions.allow in settings.json
         opt Command requires manual confirmation
-            Hook->>System: Trigger afplay Glass.aiff (non-blocking)
+            RTKHook->>System: Trigger afplay Glass.aiff (non-blocking)
         end
-        Hook->>RTK: Pipe payload to `rtk hook gemini`
+        RTKHook->>RTK: Pipe payload to `rtk hook gemini`
         RTK->>Engine: Return execution/proxy response
     end
     Engine->>Model: Return tool execution result
@@ -115,7 +116,7 @@ sequenceDiagram
     end
 
     SL->>Cache: Read transcript.jsonl (cached 2s) for active Skill & MCP
-    SL->>CLI: Render formatted 2-line ANSI output
+    SL->>CLI: Render formatted ANSI output (1-line wide / 2-line standard)
 ```
 
 ---
