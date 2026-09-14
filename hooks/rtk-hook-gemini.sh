@@ -12,13 +12,7 @@ play_sound() {
   (osascript -e 'display notification "Agent memerlukan keputusan/konfirmasi Anda!" with title "Antigravity" sound name "Glass"' &) 2>/dev/null || true
 }
 
-# 1. Jika toolCall adalah ask_question, mainkan suara & teruskan
-if [ "$TOOL_NAME" = "ask_question" ]; then
-  play_sound
-  echo "$PAYLOAD" | exec rtk hook gemini
-fi
-
-# 2. Jika toolCall adalah eksekusi shell command (run_command / run_shell_command)
+# 1. Jika toolCall adalah eksekusi shell command (run_command / run_shell_command)
 if [ "$TOOL_NAME" = "run_command" ] || [ "$TOOL_NAME" = "run_shell_command" ]; then
   CMD=$(echo "$PAYLOAD" | jq -r '.toolCall.args.CommandLine // .toolCall.args.command // empty' 2>/dev/null || true)
 
