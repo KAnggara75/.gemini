@@ -38,6 +38,8 @@ graph TD
         PodmanMCP[Podman MCP Server]
         K8sMCP[K8s MCP Server]
         MemoryMCP[Memory MCP / memory.jsonl]
+        PostmanMCP[Postman MCP Server]
+        JiraMCP[Jira MCP Server]
     end
 
     subgraph Subagents & Roles
@@ -64,6 +66,8 @@ graph TD
     MCPConfig --> PodmanMCP
     MCPConfig --> K8sMCP
     MCPConfig --> MemoryMCP
+    MCPConfig --> PostmanMCP
+    MCPConfig --> JiraMCP
 
     Core --> DevOpsAgent
     Core --> CodeReviewerAgent

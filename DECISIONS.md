@@ -100,3 +100,14 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 - **Context**: Pengembang memerlukan automated code review mendalam khusus untuk ekosistem Java (Quarkus, Kafka SmallRye Reactive Messaging, MicroProfile REST Client) dan Golang, dengan fokus utama pada deteksi kebocoran memori (OOM), mitigasi NullPointerException (NPE), konkurensi aman, serta penegakan prinsip DRY.
 - **Decision**: Mengonfigurasi subagent mandiri `code-reviewer` di [`config/agents/code-reviewer/agent.md`](file:///Users/i/work/KAnggara75/.gemini/config/agents/code-reviewer/agent.md) yang mengintegrasikan checklist audit NPE, unboxing trap, reactive stream backpressure, REST client socket cleanup, dan MapStruct/shared handlers DRY enforcement.
 - **Consequences**: Analisis kode Java dan Go dapat didelegasikan secara terisolasi tanpa membebani context window percakapan utama, menghasilkan laporan review terstruktur dengan klasifikasi severity (Blocker, Major, Minor, Suggestion).
+
+---
+
+## ADR-010: Integrasi Postman dan Jira MCP Server dengan Sanitasi Git Otomatis
+
+- **Status**: Accepted
+- **Date**: 2026-09-14
+- **Source**: Developer request
+- **Context**: Pengembang memerlukan akses terpadu langsung dari Antigravity ke koleksi Postman API (workspaces, collections, environments) serta tiket Atlassian Jira, namun token API (`POSTMAN_API_KEY`, `JIRA_API_TOKEN`) tidak boleh bocor ke git repository publik.
+- **Decision**: Mendaftarkan MCP server `postman` (`@postman/postman-mcp-server`) dan `jira` (`mcp-jira`) ke dalam [`config/mcp_config.json`](file:///Users/i/work/KAnggara75/.gemini/config/mcp_config.json). Menggunakan mekanisme staging ganda untuk me-record versi template placeholder (`YOUR_POSTMAN_API_KEY`, `YOUR_JIRA_API_TOKEN`) ke git index sementara file fisik di mesin lokal tetap menyimpan secret aktif dan dilindungi oleh `git update-index --skip-worktree`.
+- **Consequences**: Agent dapat mengeksekusi operasi Postman dan Jira secara langsung di mesin lokal tanpa ada risiko kebocoran kredensial saat repositori di-commit atau di-push ke GitHub.

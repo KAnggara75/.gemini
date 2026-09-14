@@ -3,7 +3,7 @@
 ## 1. Project Purpose
 Repository `.gemini` adalah repositori manajemen konfigurasi (*dotfiles* dan *custom tooling*) untuk lingkungan pengembangan bertenaga Google Antigravity AI (CLI `agy`, IDE, dan desktop app). Tujuan intinya adalah:
 1. Menyediakan *centralized source of truth* untuk perizinan, tema, dan preferensi agent.
-2. Mengintegrasikan Model Context Protocol (MCP) server lokal dan remote (Kubernetes, Podman, Context7, Git, Memory Graph).
+2. Mengintegrasikan Model Context Protocol (MCP) server lokal dan remote (Kubernetes, Podman, Context7, Git, Memory Graph, Postman, Jira).
 3. Mengotomasi alur kerja pengembangan melalui *custom skills* terstandarisasi (`ka-git-commit`, `ka-pr`, `ka-del-conversation`, `ka-context`).
 4. Mengoptimalkan konsumsi token AI hingga 60–90% menggunakan proxy RTK (Rust Token Killer).
 
@@ -30,7 +30,7 @@ Repository `.gemini` adalah repositori manajemen konfigurasi (*dotfiles* dan *cu
    - **`devops`**: Subagent operasional kontainer (Podman), klaster k8s, dan pipeline CI/CD.
    - **`code-reviewer`**: Subagent peninjau kode statis tingkat lanjut khusus Java (Quarkus, Kafka, REST Client) dan Go.
 4. **RTK (Rust Token Killer)**: Proxy CLI lokal yang memfilter dan mengompres output perintah terminal standar untuk menghemat token.
-5. **MCP Servers**: Daemon/proses yang menyediakan kapabilitas tambahan (k8s cluster inspection, container status, git diffing, dan memory indexing).
+5. **MCP Servers**: Daemon/proses yang menyediakan kapabilitas tambahan (k8s cluster inspection, container status, git diffing, memory indexing, Postman API collections/environments, dan Jira issue tracking).
 
 ---
 
