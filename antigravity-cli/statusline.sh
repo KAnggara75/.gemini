@@ -91,6 +91,8 @@ format_tokens() {
     (.transcript_path // "")
   ' 2>/dev/null || printf "idle\n0\n0\n0\n\nfalse\nfalse\n0\n0\n0\n\n\n\n\n80\n\n"
 )"
+COLS="${COLS:-80}"
+[[ "$COLS" =~ ^[0-9]+$ ]] || COLS=80
 
 # ─── Check Exit State or Save Cache ──────────────────────────────────────────
 STATE_LOWER=$(echo "$STATE" | tr '[:upper:]' '[:lower:]')
@@ -206,17 +208,6 @@ if [ "$SANDBOX" = "true" ]; then
   SB="${FG_BRIGHT_GREEN}🛡️ on${R}"
 else
   SB="${FG_GRAY}🛡️ off${R}"
-fi
-
-# ─── Dotfile Link / Sync Status Badge ─────────────────────────────────────────
-# Mengecek apakah settings.json terhubung dengan benar (symlink atau hardlink ke repo)
-CLI_SETT="${HOME}/.gemini/antigravity-cli/settings.json"
-REPO_SETT="/Users/i/work/KAnggara75/.gemini/antigravity-cli/settings.json"
-
-if [ -L "$CLI_SETT" ] || { [ -f "$CLI_SETT" ] && [ -f "$REPO_SETT" ] && [ "$(stat -f "%i" "$CLI_SETT" 2>/dev/null)" = "$(stat -f "%i" "$REPO_SETT" 2>/dev/null)" ]; }; then
-  SYNC_FMT="${FG_BRIGHT_GREEN}🔗 synced${R}"
-else
-  SYNC_FMT="${FG_BRIGHT_YELLOW}⚠️ unsynced${R}"
 fi
 
 # ─── Active Skill & MCP Detection ─────────────────────────────────────────────
@@ -373,7 +364,7 @@ DOT="${FG_GRAY} · ${R}"
 
 # ─── Output Layout ───────────────────────────────────────────────────────────
 LINE1="${S}${C}${M}${SKILL_BADGE}${MCP_BADGE}${V}"
-LINE2="${CTX}${DOT}${ART_FMT}${DOT}${SUB_FMT}${DOT}${BG_FMT}${DOT}${SB}${DOT}${SYNC_FMT}"
+LINE2="${CTX}${DOT}${ART_FMT}${DOT}${SUB_FMT}${DOT}${BG_FMT}${DOT}${SB}"
 
 
 
