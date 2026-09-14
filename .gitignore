@@ -2,6 +2,7 @@ oauth_creds.json
 google_accounts.json
 history/
 config/sidecars/
+config/plugins/
 config/projects
 mcp.log
 history.jsonl
