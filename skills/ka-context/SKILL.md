@@ -158,6 +158,10 @@ Before finalizing:
 Record every developer decision as an Architecture Decision Record (ADR):
 - **MANDATORY RULE**: Always read existing `DECISIONS.md` first. **NEVER OVERWRITE** previous ADRs.
 - Always use incremental numbering (e.g., if `ADR-005` exists, create `ADR-006`).
+- **Jira Issue Synchronization**:
+  - Jika terdapat nomor tiket Jira (misal: `SDPS-1781`, `PROJ-123`) yang terdeteksi dari git branch, commit message, pull request, atau percakapan, **SELALU tanyakan kepada developer** apakah ingin menyinkronkan konteks keputusan berdasarkan issue Jira tersebut.
+  - Jika developer menyetujui, gunakan tool Jira MCP (`jira_get` dengan path `/rest/api/3/issue/{issueKey}`) untuk mengambil summary, description, dan acceptance criteria tiket sebagai referensi `Context` dan `Decision` pada ADR.
+  - Cantumkan referensi tiket pada field `Source` (contoh: `- **Source**: Jira [SDPS-1781](https://<site>.atlassian.net/browse/SDPS-1781) & Developer interview`).
 
 ADR Format:
 ```markdown
@@ -165,7 +169,7 @@ ADR Format:
 
 - **Status**: Accepted | Deprecated | Superseded by ADR-00Y
 - **Date**: YYYY-MM-DD
-- **Source**: Developer interview / Codebase evidence
+- **Source**: Developer interview / Codebase evidence / Jira [<ISSUE-KEY>](https://...)
 - **Context**: <Problem background and motivation>
 - **Decision**: <Specific architectural choice made>
 - **Consequences**: <Positive, negative, or trade-off impacts>
