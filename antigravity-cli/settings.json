@@ -64,6 +64,7 @@
       "command(pre-commit)",
       "command(ps)",
       "command(pwd)",
+      "command(bunx)",
       "command(python3 - \u003c\u003c'PYEOF')",
       "command(python3 -c)",
       "command(readlink)",
@@ -105,12 +106,15 @@
       "write_file(*)",
       "command(date)",
       "command(npm view)",
-      "command(bunx @postman/postman-mcp-server --help)",
       "mcp(postman/getWorkspaces)",
       "mcp(postman/getCollections)",
       "mcp(postman/getEnvironments)",
       "command(/Applications/Ghostty.app/Contents/MacOS/ghostty)",
-      "mcp(jira/jira_get_issue)"
+      "command(npm pack)",
+      "command(tar)",
+      "command(npm search)",
+      "command(bunx -y @aashari/mcp-server-atlassian-jira)",
+      "mcp(jira/jira_get)"
     ]
   },
   "runningLightSpeed": "off",

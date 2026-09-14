@@ -111,3 +111,14 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 - **Context**: Pengembang memerlukan akses terpadu langsung dari Antigravity ke koleksi Postman API (workspaces, collections, environments) serta tiket Atlassian Jira, namun token API (`POSTMAN_API_KEY`, `JIRA_API_TOKEN`) tidak boleh bocor ke git repository publik.
 - **Decision**: Mendaftarkan MCP server `postman` (`@postman/postman-mcp-server`) dan `jira` (`mcp-jira`) ke dalam [`config/mcp_config.json`](file:///Users/i/work/KAnggara75/.gemini/config/mcp_config.json). Menggunakan mekanisme staging ganda untuk me-record versi template placeholder (`YOUR_POSTMAN_API_KEY`, `YOUR_JIRA_API_TOKEN`) ke git index sementara file fisik di mesin lokal tetap menyimpan secret aktif dan dilindungi oleh `git update-index --skip-worktree`.
 - **Consequences**: Agent dapat mengeksekusi operasi Postman dan Jira secara langsung di mesin lokal tanpa ada risiko kebocoran kredensial saat repositori di-commit atau di-push ke GitHub.
+
+---
+
+## ADR-011: Migrasi Jira MCP Server ke Package Modern REST API v3
+
+- **Status**: Accepted
+- **Date**: 2026-09-14
+- **Source**: Codebase evidence & developer validation
+- **Context**: Package `mcp-jira@0.1.0` mengalami kegagalan pada Atlassian Cloud karena dua hal: otentikasi mengirim format Bearer token (ditolak HTTP 403) dan memanggil endpoint `/rest/api/2/search` yang sudah dihapus permanen oleh Atlassian (HTTP 410 Gone / CHANGE-2046).
+- **Decision**: Mengganti package runner Jira MCP pada [`config/mcp_config.json`](file:///Users/i/work/KAnggara75/.gemini/config/mcp_config.json) menjadi `@aashari/mcp-server-atlassian-jira` yang menggunakan Jira Cloud REST API v3, format output TOON hemat token, dan konfigurasi environment terstandarisasi (`ATLASSIAN_SITE_NAME`, `ATLASSIAN_USER_EMAIL`, `ATLASSIAN_API_TOKEN`).
+- **Consequences**: Pemanggilan issue dan pencarian JQL Jira berjalan lancar tanpa error 403/410, didukung pemfilteran respons via JMESPath (`jq`) untuk efisiensi token context window. Kredensial lokal tetap aman di bawah proteksi `git update-index --skip-worktree`.
