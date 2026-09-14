@@ -6,9 +6,6 @@
     "allow": [
       "read_file(*)",
       "write_file(*)",
-      "write_to_file(*)",
-      "replace_file_content(*)",
-      "edit_file(*)",
       "command(lsof)",
       "command(ps)",
       "command(grep)",
@@ -80,7 +77,18 @@
       "command(tr)",
       "command(echo)",
       "command(~/.gemini/antigravity-cli/statusline.sh)",
-      "mcp(k8s-mcp-server/listResources)"
+      "mcp(k8s-mcp-server/listResources)",
+      "command(git check-ignore)",
+      "command(defaults)",
+      "command(pmset)",
+      "command(which)",
+      "command(git config)",
+      "command(brew search)",
+      "command(brew install)",
+      "command(touch)",
+      "command(brew info)",
+      "command(open)",
+      "command(pgrep)"
     ]
   },
   "runningLightSpeed": "off",
@@ -119,7 +127,8 @@
     "/Users/i/work/aops/anuitas",
     "/Users/i/work/KAnggara75/2dto",
     "/Users/i/work/PakaiWA/pakaiwa-platform",
-    "/Users/i/.gemini/antigravity-cli"
+    "/Users/i/.gemini/antigravity-cli",
+    "/Users/i/work/local"
   ],
   "useG1Credits": true
 }
