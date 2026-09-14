@@ -56,3 +56,25 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 - **Context**: Pengembang ingin mengetahui secara transparan di terminal apakah agent saat ini sedang mengeksekusi skill tertentu atau sedang mengakses server MCP eksternal.
 - **Decision**: Mengekstrak invocations skill dan MCP tool calls dari log transkrip percakapan terakhir dan menampilkannya di statusline baris pertama (`⚡ <skill>` dan `🔌 <mcp>`), serta menampilkan tanda strip `-` saat tidak ada skill atau MCP yang aktif di turn tersebut.
 - **Consequences**: Visibilitas eksekusi agent meningkat drastis dengan overhead I/O minimal berkat sistem file caching 2 detik.
+
+---
+
+## ADR-006: Penghapusan Visual Badge Synced dari Statusline Layout
+
+- **Status**: Accepted
+- **Date**: 2026-09-14
+- **Source**: Developer request
+- **Context**: Badge visual `🔗 synced` / `⚠️ unsynced` di baris kedua statusline tidak memberikan nilai tambah yang signifikan karena mekanisme self-healing symlink di latar belakang sudah berjalan secara otomatis dan senyap.
+- **Decision**: Menghapus variabel dan badge visual `${SYNC_FMT}` dari layout statusline terminal, tetapi tetap mempertahankan proses self-healing symlink di background watcher `statusline.sh`.
+- **Consequences**: Layout baris statusline lebih ringkas, fokus pada metrik inti (context window, artifacts, subagents, background tasks, sandbox state), tanpa mengurangi keandalan sinkronisasi dotfile.
+
+---
+
+## ADR-007: Isolasi Hook dan Eliminasi Duplikasi Audio Notifikasi
+
+- **Status**: Accepted
+- **Date**: 2026-09-14
+- **Source**: Developer request
+- **Context**: Suara notifikasi sistem macOS (`Glass.aiff`) terdengar berulang/ganda saat prompt interaksi user muncul karena `ask_question` ditangani bersamaan oleh `rtk-hook-gemini.sh` dan `notify-decision.sh`.
+- **Decision**: Mengisolasi penanganan `ask_question` secara eksklusif ke [`hooks/notify-decision.sh`](file:///Users/i/work/KAnggara75/.gemini/hooks/notify-decision.sh) dan menghapus handler `ask_question` dari [`hooks/rtk-hook-gemini.sh`](file:///Users/i/work/KAnggara75/.gemini/hooks/rtk-hook-gemini.sh) sehingga `rtk-hook-gemini.sh` murni memproses perintah terminal (`run_command` / `run_shell_command`).
+- **Consequences**: Audio prompt hanya berbunyi satu kali secara presisi setiap kali agent memerlukan keputusan atau masukan dari developer.
