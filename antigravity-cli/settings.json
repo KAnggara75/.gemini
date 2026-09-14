@@ -114,7 +114,11 @@
       "command(tar)",
       "command(npm search)",
       "command(bunx -y @aashari/mcp-server-atlassian-jira)",
-      "mcp(jira/jira_get)"
+      "mcp(jira/jira_get)",
+      "command(git clone)",
+      "mcp(jira/jira_get_issue)",
+      "command(git rev-parse)",
+      "command(printf)"
     ]
   },
   "runningLightSpeed": "off",
