@@ -1,20 +1,21 @@
 {
   "mcpServers": {
     "context7": {
-      "command": "bunx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp",
-        "--api-key",
-        "YOUR_CONTEXT7_API_KEY"
-      ]
+      "serverUrl": "https://mcp.context7.com/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_CONTEXT7_API_KEY"
+      }
     },
     "podman-mcp": {
       "command": "bunx",
       "args": [
         "-y",
         "podman-mcp-server@latest"
-      ]
+      ],
+      "env": {
+        "PATH": "/opt/podman/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+        "CONTAINER_HOST": "unix:///Users/i/.local/share/containers/podman/machine/podman.sock"
+      }
     },
     "git": {
       "command": "bunx",
@@ -29,7 +30,7 @@
         "@modelcontextprotocol/server-memory"
       ],
       "env": {
-        "MEMORY_FILE_PATH": "~/.gemini/memory.json"
+        "MEMORY_FILE_PATH": "/Users/i/.gemini/memory.jsonl"
       }
     },
     "filesystem": {
@@ -37,8 +38,28 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "~"
+        "/Users/i/work"
       ]
+    },
+    "k8s-mcp-server": {
+      "command": "/Users/Shared/dev/bin/k8s-mcp-server",
+      "args": [
+        "--mode",
+        "stdio"
+      ],
+      "env": {
+        "KUBECONFIG": "~/.kube/config"
+      }
+    },
+    "postman": {
+      "command": "bunx",
+      "args": [
+        "-y",
+        "@postman/postman-mcp-server@latest"
+      ],
+      "env": {
+        "POSTMAN_API_KEY": "YOUR_POSTMAN_API_KEY"
+      }
     }
   }
 }
