@@ -1,5 +1,6 @@
 {
   "allowNonWorkspaceAccess": true,
+  "artifactReviewPolicy": "always-proceed",
   "model": "Gemini 3.8 Flash (Low)",
   "notifications": true,
   "permissions": {
@@ -146,6 +147,7 @@
     ]
   },
   "runningLightSpeed": "off",
+  "showFeedbackSurvey": false,
   "showTips": false,
   "statusLine": {
     "type": "command",
@@ -193,5 +195,6 @@
     "/Users/i/work/KAnggara/k8s/core",
     "/Users/i/work/KAnggara75/kanggara75"
   ],
-  "useG1Credits": true
+  "useG1Credits": true,
+  "verbosity": "low"
 }

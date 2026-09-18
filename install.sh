@@ -72,7 +72,12 @@ fi
 echo
 echo "[4/6] Setting up skills..."
 AGENTS_SKILLS_DIR="${HOME}/.agents/skills"
+CLI_SKILLS_DIR="${TARGET_DIR}/antigravity-cli/skills"
+CONFIG_SKILLS_DIR="${TARGET_DIR}/config/skills"
+
 mkdir -p "${AGENTS_SKILLS_DIR}"
+mkdir -p "${CLI_SKILLS_DIR}"
+mkdir -p "${REPO_DIR}/config/skills"
 mkdir -p "${REPO_DIR}/skills"
 
 # Ensure ~/.gemini/skills points to ~/.agents/skills
@@ -81,12 +86,14 @@ if [ ! -e "${TARGET_DIR}/skills" ] && [ ! -L "${TARGET_DIR}/skills" ]; then
   echo "  [LINKED] ${TARGET_DIR}/skills -> ${AGENTS_SKILLS_DIR}"
 fi
 
-# Link all skill directories in skills/ to ~/.agents/skills/
+# Link all skill directories to destination skill directories
 if [ -d "${REPO_DIR}/skills" ]; then
   for skill_dir in "${REPO_DIR}/skills"/*; do
     if [ -d "${skill_dir}" ]; then
       skill_name="$(basename "${skill_dir}")"
       link_file "${skill_dir}" "${AGENTS_SKILLS_DIR}/${skill_name}"
+      link_file "${skill_dir}" "${CLI_SKILLS_DIR}/${skill_name}"
+      link_file "${skill_dir}" "${CONFIG_SKILLS_DIR}/${skill_name}"
     fi
   done
 fi

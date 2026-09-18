@@ -40,15 +40,15 @@ if [ -z "$INPUT_JSON" ]; then
   exit 0
 fi
 
-# Helper function untuk format angka k/M
+# Helper function untuk format angka k/M (pure bash, fast & zero fork)
 format_tokens() {
   local num=$1
   if [ -z "$num" ] || [ "$num" = "null" ] || [ "$num" -eq 0 ] 2>/dev/null; then
     echo "0"
   elif [ "$num" -ge 1000000 ]; then
-    printf "%.1fM" "$(echo "scale=1; $num/1000000" | bc -l 2>/dev/null || awk "BEGIN {printf \"%.1f\", $num/1000000}")"
+    echo "$((num / 1000000)).$(((num % 1000000) / 100000))M"
   elif [ "$num" -ge 1000 ]; then
-    printf "%.1fk" "$(echo "scale=1; $num/1000" | bc -l 2>/dev/null || awk "BEGIN {printf \"%.1f\", $num/1000}")"
+    echo "$((num / 1000)).$(((num % 1000) / 100))k"
   else
     echo "$num"
   fi
@@ -73,6 +73,8 @@ format_tokens() {
   read -r TRANSCRIPT_PATH || true
   read -r USER_EMAIL || true
   read -r QUOTA_5H || true
+  read -r TURN_IN || true
+  read -r TURN_OUT || true
 } <<< "$(
   echo "$INPUT_JSON" | jq -r '
     (.agent_state // "idle"),
@@ -97,8 +99,10 @@ format_tokens() {
       def is3p: (m | (contains("claude") or contains("gpt") or contains("3p") or contains("sonnet") or contains("haiku") or contains("opus")));
       def frac: (if is3p then (.quota["3p-5h"].remaining_fraction // .quota["gemini-5h"].remaining_fraction // null) else (.quota["gemini-5h"].remaining_fraction // .quota["3p-5h"].remaining_fraction // null) end);
       if frac != null then ((frac * 100) | round) else "" end
-    )
-  ' 2>/dev/null || printf "idle\n0\n0\n0\n\nfalse\nfalse\n0\n0\n0\n\n\n\n\n80\n\n\n\n"
+    ),
+    (.context_window.current_usage.input_tokens // 0),
+    (.context_window.current_usage.output_tokens // 0)
+  ' 2>/dev/null || printf "idle\n0\n0\n0\n\nfalse\nfalse\n0\n0\n0\n\n\n\n\n80\n\n\n\n0\n0\n"
 )"
 COLS="${COLS:-80}"
 [[ "$COLS" =~ ^[0-9]+$ ]] || COLS=80
@@ -393,6 +397,17 @@ fi
 
 CTX="${FG_GRAY}ctx ${BAR_COLOR}${BAR} ${NUM_COLOR}${PCT_FMT}%${R}${TOKEN_INFO}"
 
+# ─── Current Turn Usage ──────────────────────────────────────────────────────
+TURN_IN_INT=${TURN_IN:-0}
+TURN_OUT_INT=${TURN_OUT:-0}
+if [ "$TURN_IN_INT" -gt 0 ] || [ "$TURN_OUT_INT" -gt 0 ] 2>/dev/null; then
+  TURN_IN_STR=$(format_tokens "$TURN_IN_INT")
+  TURN_OUT_STR=$(format_tokens "$TURN_OUT_INT")
+  TURN_FMT="${FG_GRAY}turn ${FG_CYAN}↓${TURN_IN_STR} ${FG_MAGENTA}↑${TURN_OUT_STR}${R}"
+else
+  TURN_FMT="${FG_GRAY}turn 0${R}"
+fi
+
 # ─── Dynamic Highlight Stats ─────────────────────────────────────────────────
 # Memberi highlight hanya ketika count > 0 agar fokus ke aktivitas penting
 if [ "$ARTIFACTS" -gt 0 ] 2>/dev/null; then
@@ -418,7 +433,7 @@ DOT="${FG_GRAY} · ${R}"
 
 # ─── Output Layout ───────────────────────────────────────────────────────────
 LINE1="${S}${C}${M}${SKILL_BADGE}${MCP_BADGE}${V}${ACC_BADGE}"
-LINE2="${CTX}${DOT}${ART_FMT}${DOT}${SUB_FMT}${DOT}${BG_FMT}${DOT}${SB}"
+LINE2="${CTX}${DOT}${TURN_FMT}${DOT}${ART_FMT}${DOT}${SUB_FMT}${DOT}${BG_FMT}${DOT}${SB}"
 
 
 
@@ -429,5 +444,5 @@ elif [ "$COLS" -ge 80 ]; then
   echo -e "${FG_GRAY}╰─${R} ${LINE2}"
 else
   echo -e "${S}${C}${M}${ACC_BADGE}"
-  echo -e "${CTX}${DOT}${BG_FMT}"
+  echo -e "${CTX}${DOT}${TURN_FMT}"
 fi

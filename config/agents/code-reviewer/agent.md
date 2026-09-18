@@ -9,7 +9,6 @@ tools:
   - grep_search
   - find_by_name
   - list_dir
-  - call_mcp_tool
 mcp_servers:
   - git
   - filesystem
