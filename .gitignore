@@ -11,3 +11,4 @@ memory.jsonl
 skills/*
 !skills/ka-*/
 !skills/ka-*/**
+__pycache__/
