@@ -153,10 +153,13 @@ def cmd_switch(target: str):
             print(f"  {B}{a:<4}{R} → {e}")
         sys.exit(1)
 
-    # Cek jika sudah aktif
+    # Cek jika sudah aktif di keychain
     raw = keychain_read()
     current_email = get_email_from_raw(raw) if raw else ""
     if current_email == target_email:
+        # Pastikan google_accounts.json tetap sinkron dengan email riil
+        if get_active_account_email() != target_email:
+            set_active_account_email(target_email)
         success(f"Sudah menggunakan akun {YL}{target_email}{R}. Tidak perlu switch.")
         return
 
