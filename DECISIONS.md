@@ -122,3 +122,14 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 - **Context**: Package `mcp-jira@0.1.0` mengalami kegagalan pada Atlassian Cloud karena dua hal: otentikasi mengirim format Bearer token (ditolak HTTP 403) dan memanggil endpoint `/rest/api/2/search` yang sudah dihapus permanen oleh Atlassian (HTTP 410 Gone / CHANGE-2046).
 - **Decision**: Mengganti package runner Jira MCP pada [`config/mcp_config.json`](file:///Users/i/work/KAnggara75/.gemini/config/mcp_config.json) menjadi `@aashari/mcp-server-atlassian-jira` yang menggunakan Jira Cloud REST API v3, format output TOON hemat token, dan konfigurasi environment terstandarisasi (`ATLASSIAN_SITE_NAME`, `ATLASSIAN_USER_EMAIL`, `ATLASSIAN_API_TOKEN`).
 - **Consequences**: Pemanggilan issue dan pencarian JQL Jira berjalan lancar tanpa error 403/410, didukung pemfilteran respons via JMESPath (`jq`) untuk efisiensi token context window. Kredensial lokal tetap aman di bawah proteksi `git update-index --skip-worktree`.
+
+---
+
+## ADR-012: CLI Multi-Account Switcher (`swagy`) via macOS Keychain dan Token Backups
+
+- **Status**: Accepted
+- **Date**: 2026-09-18
+- **Source**: Developer request & Codebase implementation (`antigravity-cli/swagy.sh`)
+- **Context**: Developer menggunakan dua akun Google (`pakaiwa.id@gmail.com` dan `kaanggara75@gmail.com`) untuk mengakses Antigravity CLI. Sebelumnya, beralih akun memerlukan proses re-autentikasi manual berulang yang menghapus token yang sedang aktif di macOS Keychain.
+- **Decision**: Mengembangkan utilitas CLI [`antigravity-cli/swagy.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/swagy.sh) berbasis Python 3 yang di-symlink sebagai binary `swagy` di `~/.local/bin/` dan `~/.gemini/antigravity-cli/bin/`. Script menyimpan token per-akun secara lokal pada `~/.gemini/accounts/<email>.token` (permission `600`), melakukan backup otomatis token aktif sebelum switch, merestorasi token akun target ke Keychain entry `gemini / antigravity`, memperbarui `~/.gemini/google_accounts.json`, dan mengosongkan file cache percakapan untuk mencegah tumpang-tindih sesi. Menyediakan alias cepat: `pwa` (`pakaiwa.id@gmail.com`) dan `kaa` (`kaanggara75@gmail.com`).
+- **Consequences**: Pergantian akun Google dapat dilakukan instan via terminal (`swagy pwa` atau `swagy kaa`) tanpa re-login manual. File token tersimpan di direktori lokal dengan permission ketat (`700`/`600`) dan terproteksi dari Git tracking.
