@@ -55,22 +55,24 @@ format_tokens() {
 }
 
 {
-  read -r STATE
-  read -r USED_PCT
-  read -r USED_TOKENS
-  read -r TOTAL_TOKENS
-  read -r VCS_BRANCH
-  read -r VCS_DIRTY
-  read -r SANDBOX
-  read -r ARTIFACTS
-  read -r SUBAGENTS
-  read -r BG_TASKS
-  read -r MODEL
-  read -r CONV_TITLE
-  read -r CONV_ID
-  read -r WS_DIR
-  read -r COLS
-  read -r TRANSCRIPT_PATH
+  read -r STATE || true
+  read -r USED_PCT || true
+  read -r USED_TOKENS || true
+  read -r TOTAL_TOKENS || true
+  read -r VCS_BRANCH || true
+  read -r VCS_DIRTY || true
+  read -r SANDBOX || true
+  read -r ARTIFACTS || true
+  read -r SUBAGENTS || true
+  read -r BG_TASKS || true
+  read -r MODEL || true
+  read -r CONV_TITLE || true
+  read -r CONV_ID || true
+  read -r WS_DIR || true
+  read -r COLS || true
+  read -r TRANSCRIPT_PATH || true
+  read -r USER_EMAIL || true
+  read -r QUOTA_5H || true
 } <<< "$(
   echo "$INPUT_JSON" | jq -r '
     (.agent_state // "idle"),
@@ -88,8 +90,15 @@ format_tokens() {
     (.conversation_id // .session_id // ""),
     (.workspace.project_dir // .workspace.current_dir // .cwd // ""),
     (.terminal_width // 80),
-    (.transcript_path // "")
-  ' 2>/dev/null || printf "idle\n0\n0\n0\n\nfalse\nfalse\n0\n0\n0\n\n\n\n\n80\n\n"
+    (.transcript_path // ""),
+    (.email // ""),
+    (
+      def m: ((.model.display_name // "") | ascii_downcase);
+      def is3p: (m | (contains("claude") or contains("gpt") or contains("3p") or contains("sonnet") or contains("haiku") or contains("opus")));
+      def frac: (if is3p then (.quota["3p-5h"].remaining_fraction // .quota["gemini-5h"].remaining_fraction // null) else (.quota["gemini-5h"].remaining_fraction // .quota["3p-5h"].remaining_fraction // null) end);
+      if frac != null then ((frac * 100) | round) else "" end
+    )
+  ' 2>/dev/null || printf "idle\n0\n0\n0\n\nfalse\nfalse\n0\n0\n0\n\n\n\n\n80\n\n\n\n"
 )"
 COLS="${COLS:-80}"
 [[ "$COLS" =~ ^[0-9]+$ ]] || COLS=80
@@ -215,6 +224,37 @@ fi
 M=""
 if [ -n "$MODEL" ]; then
   M="${FG_GRAY} ╱ ${FG_BRIGHT_MAGENTA}${MODEL}${R}"
+fi
+
+# ─── Account & 5h Quota Usage ────────────────────────────────────────────────
+ACC_BADGE=""
+if [ -z "$USER_EMAIL" ]; then
+  USER_EMAIL=$(jq -r '.active // empty' "${HOME}/.gemini/google_accounts.json" 2>/dev/null || true)
+fi
+
+if [ -n "$USER_EMAIL" ]; then
+  if [[ "$USER_EMAIL" == *"pakaiwa"* ]]; then
+    ACC_ALIAS="pwa"
+  elif [[ "$USER_EMAIL" == *"kaanggara"* || "$USER_EMAIL" == *"kanggara"* ]]; then
+    ACC_ALIAS="kaa"
+  else
+    ACC_ALIAS="${USER_EMAIL%%@*}"
+  fi
+
+  # Format persentase sisa 5-hour quota jika tersedia
+  QUOTA_STR=""
+  if [ -n "$QUOTA_5H" ] && [[ "$QUOTA_5H" =~ ^[0-9]+$ ]]; then
+    if [ "$QUOTA_5H" -ge 50 ]; then
+      Q_COLOR="${FG_BRIGHT_GREEN}"
+    elif [ "$QUOTA_5H" -ge 20 ]; then
+      Q_COLOR="${FG_BRIGHT_YELLOW}"
+    else
+      Q_COLOR="${FG_BRIGHT_RED}"
+    fi
+    QUOTA_STR=" ${Q_COLOR}⏳${QUOTA_5H}%${R}"
+  fi
+
+  ACC_BADGE="${FG_GRAY} ╱ ${FG_BRIGHT_CYAN}👤 ${ACC_ALIAS}${R}${QUOTA_STR}"
 fi
 
 # ─── Sandbox Badge ───────────────────────────────────────────────────────────
@@ -377,7 +417,7 @@ fi
 DOT="${FG_GRAY} · ${R}"
 
 # ─── Output Layout ───────────────────────────────────────────────────────────
-LINE1="${S}${C}${M}${SKILL_BADGE}${MCP_BADGE}${V}"
+LINE1="${S}${C}${M}${SKILL_BADGE}${MCP_BADGE}${V}${ACC_BADGE}"
 LINE2="${CTX}${DOT}${ART_FMT}${DOT}${SUB_FMT}${DOT}${BG_FMT}${DOT}${SB}"
 
 
@@ -388,6 +428,6 @@ elif [ "$COLS" -ge 80 ]; then
   echo -e "${FG_GRAY}╭─${R} ${LINE1}"
   echo -e "${FG_GRAY}╰─${R} ${LINE2}"
 else
-  echo -e "${S}${C}${M}"
+  echo -e "${S}${C}${M}${ACC_BADGE}"
   echo -e "${CTX}${DOT}${BG_FMT}"
 fi
