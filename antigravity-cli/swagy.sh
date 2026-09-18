@@ -95,6 +95,23 @@ def get_active_account_email() -> str:
 def set_active_account_email(email: str):
     ACCOUNTS_JSON.write_text(json.dumps({"active": email, "old": []}, indent=2))
 
+def kill_running_agy():
+    my_pid = os.getpid()
+    try:
+        r = subprocess.run(["pgrep", "-x", "agy"], capture_output=True, text=True)
+        pids = [p.strip() for p in r.stdout.splitlines() if p.strip()]
+        killed = 0
+        for pid in pids:
+            if int(pid) != my_pid:
+                subprocess.run(["kill", "-9", pid], capture_output=True)
+                killed += 1
+        if killed > 0:
+            info(f"Menghentikan {killed} proses {B}agy{R} yang sedang berjalan.")
+        else:
+            info("Tidak ada proses agy yang sedang berjalan.")
+    except Exception as e:
+        warn(f"Gagal menghentikan proses agy: {e}")
+
 # ─── Commands ─────────────────────────────────────────────────
 def cmd_show():
     raw = keychain_read()
@@ -191,6 +208,7 @@ def cmd_switch(target: str):
     set_active_account_email(target_email)
     success(f"google_accounts.json → active: {target_email}")
 
+
     # 4. Reset cache sesi
     for cache in [
         GEMINI_DIR / "antigravity-cli" / "cache" / "last_conversations.json",
@@ -199,10 +217,14 @@ def cmd_switch(target: str):
         if cache.exists():
             cache.write_text("{}")
 
+    # 5. Kill semua proses agy yang berjalan
+    kill_running_agy()
+
     print()
     print(f"{GR}{B}✓ Switch akun selesai!{R}")
     print(f"  Akun aktif: {B}{GR}{target_email}{R}")
-    print(f"  Silakan restart {B}agy{R} untuk memulai sesi baru.")
+    print(f"  Semua proses {B}agy{R} sebelumnya telah dimatikan.")
+    print(f"  Silakan jalankan kembali {B}agy{R} untuk sesi baru.")
     print()
 
 # ─── Entry Point ──────────────────────────────────────────────
