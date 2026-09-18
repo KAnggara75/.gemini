@@ -1,6 +1,6 @@
 {
   "allowNonWorkspaceAccess": true,
-  "model": "Gemini 3.8 Flash (Low)",
+  "model": "Gemini 3.8 Flash (Medium)",
   "notifications": true,
   "permissions": {
     "allow": [
@@ -190,7 +190,8 @@
     "/Users/i/work/argo",
     "/Users/i/work/KAnggara75/hb",
     "/Users/i/work/KAnggara75/scc2go",
-    "/Users/i/work/KAnggara/k8s/core"
+    "/Users/i/work/KAnggara/k8s/core",
+    "/Users/i/work/KAnggara75/kanggara75"
   ],
   "useG1Credits": true
 }
