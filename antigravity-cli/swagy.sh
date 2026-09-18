@@ -1,30 +1,33 @@
 #!/usr/bin/env python3
 """
-agy-switch-account.sh  (Python 3 implementation)
-=================================================
+swagy.sh (Python 3 implementation)
+==================================
 Switch akun Google untuk Antigravity CLI (agy).
 
-Strategi:
- - Masing-masing akun menyimpan tokennya di file lokal:
-     ~/.gemini/accounts/<email>.token
- - Saat switch, token aktif di-backup dulu ke file email sekarang,
-   lalu token email tujuan di-restore ke keychain entry "gemini/antigravity".
- - File ~/.gemini/google_accounts.json diperbarui untuk catat akun aktif.
-
 Usage:
-  agy-switch-account [show]      tampilkan akun aktif (default)
-  agy-switch-account save        simpan token akun yang sedang aktif
-  agy-switch-account pakaiwa     switch ke pakaiwa
-  agy-switch-account kanggara    switch ke kanggara
+  swagy              tampilkan status akun aktif (default)
+  swagy pwa          switch ke akun pakaiwa (pakaiwa.id@gmail.com)
+  swagy kaa          switch ke akun kaangara (kaanggara75@gmail.com)
+  swagy save         simpan token akun yang sedang aktif di keychain
 """
 
 import subprocess, base64, json, sys, os
 from pathlib import Path
 
 # ─── Konfigurasi Akun ─────────────────────────────────────────
-ACCOUNTS = {
-    "pakaiwa":  "pakaiwa.id@gmail.com",
+# Alias singkat: pwa & kaa, tetap support alias panjang pakaiwa & kaangara
+PRIMARY_ACCOUNTS = {
+    "pwa": "pakaiwa.id@gmail.com",
+    "kaa": "kaanggara75@gmail.com",
+}
+
+ALIAS_MAP = {
+    "pwa": "pakaiwa.id@gmail.com",
+    "pakaiwa": "pakaiwa.id@gmail.com",
+    "kaa": "kaanggara75@gmail.com",
+    "kaangara": "kaanggara75@gmail.com",
     "kanggara": "kaanggara75@gmail.com",
+    "kaanggara": "kaanggara75@gmail.com",
 }
 
 GEMINI_DIR    = Path.home() / ".gemini"
@@ -100,12 +103,12 @@ def cmd_show():
 
     ACCOUNTS_DIR.mkdir(mode=0o700, parents=True, exist_ok=True)
     print()
-    print(f"{B}{CY}╔══ Antigravity Account Status ════════════════════════════╗{R}")
+    print(f"{B}{CY}╔══ swagy · Antigravity Account Switcher ══════════════════╗{R}")
     print(f"{B}{CY}║{R}  {'🔑 Keychain token : ' + (token_email or 'KOSONG'):<55}{B}{CY}║{R}")
     print(f"{B}{CY}║{R}  {'📋 Akun aktif     : ' + (active_email or 'BELUM SET'):<55}{B}{CY}║{R}")
     print(f"{B}{CY}║{R}")
     print(f"{B}{CY}║{R}  Akun terdaftar:")
-    for alias, email in ACCOUNTS.items():
+    for alias, email in PRIMARY_ACCOUNTS.items():
         tfile = ACCOUNTS_DIR / f"{email}.token"
         if email == token_email:
             status = f"{GR}● AKTIF{R}"
@@ -113,12 +116,11 @@ def cmd_show():
             status = f"{GY}○ tersimpan{R}"
         else:
             status = f"{RD}✗ belum disimpan{R}"
-        print(f"{B}{CY}║{R}    {B}[{alias}]{R}  {email}  {status}")
+        print(f"{B}{CY}║{R}    {B}[{alias:<3}]{R}  {email:<26}  {status}")
     print(f"{B}{CY}║{R}")
     print(f"{B}{CY}╚══════════════════════════════════════════════════════════╝{R}")
     print()
-    prog = Path(sys.argv[0]).name
-    print(f"  Usage: {B}{prog} [pakaiwa|kanggara|save]{R}")
+    print(f"  Usage: {B}swagy [pwa|kaa|save]{R}")
     print()
 
 def cmd_save():
@@ -138,16 +140,17 @@ def cmd_save():
     success(f"Token disimpan ke {GY}{tfile}{R}")
 
 def cmd_switch(target: str):
-    # Resolve alias → email
-    target_email = ACCOUNTS.get(target, target)
+    # Resolve alias → email (prioritas: pwa / kaa / aliases / exact email)
+    target_lower = target.lower().strip()
+    target_email = ALIAS_MAP.get(target_lower, target)
 
     # Validasi
-    known = target_email in ACCOUNTS.values()
+    known = target_email in PRIMARY_ACCOUNTS.values()
     if not known:
-        error(f"Akun tidak dikenal: {target_email}")
-        print("Akun yang tersedia:")
-        for a, e in ACCOUNTS.items():
-            print(f"  {B}{a}{R} → {e}")
+        error(f"Akun tidak dikenal: {target}")
+        print("Pilihan yang tersedia:")
+        for a, e in PRIMARY_ACCOUNTS.items():
+            print(f"  {B}{a:<4}{R} → {e}")
         sys.exit(1)
 
     # Cek jika sudah aktif
@@ -173,8 +176,8 @@ def cmd_switch(target: str):
     tfile = ACCOUNTS_DIR / f"{target_email}.token"
     if not tfile.exists():
         error(f"Token untuk {target_email} belum tersimpan.")
-        print(f"{YL}Login dulu dengan akun tersebut di agy, kemudian:{R}")
-        print(f"  {B}{Path(sys.argv[0]).name} save{R}")
+        print(f"{YL}Login dulu dengan akun tersebut di agy, kemudian jalankan:{R}")
+        print(f"  {B}swagy save{R}")
         sys.exit(1)
 
     info(f"Memuat token akun: {GR}{target_email}{R}")

@@ -18,9 +18,9 @@
   - [`antigravity-cli/settings.json`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/settings.json) — Whitelist perizinan tool/command (`permissions.allow`), trusted workspaces, model AI, dan path command runner.
   - [`antigravity-cli/statusline.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/statusline.sh) — Script statusline responsif (single line/multi-line); memonitor token usage, git branch, task/subagent count, self-healing symlink, notifikasi audio prompt, serta status real-time Skill/MCP.
   - [`antigravity-cli/title.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/title.sh) — Script formatting judul jendela terminal / tmux pane berbasis agent state dan nama workspace.
-  - [`antigravity-cli/agy-switch-account.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/agy-switch-account.sh) — CLI switcher akun Google ganda (`pakaiwa` & `kanggara`) via macOS Keychain dan `google_accounts.json`.
+  - [`antigravity-cli/swagy.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/swagy.sh) — CLI switcher akun Google ganda (`pwa` & `kaa`) via macOS Keychain dan `google_accounts.json`.
 - **Dependencies**: `jq`, `afplay` (macOS), `osascript`, `bc`, `sqlite3`, `tmux`, Python 3.
-- **Consumers**: Antigravity CLI runtime loop, developer CLI (`agy-switch`).
+- **Consumers**: Developer CLI (`swagy`, `agy-switch`).
 
 ---
 

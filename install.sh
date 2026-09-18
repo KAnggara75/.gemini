@@ -35,9 +35,9 @@ link_file() {
 echo "[1/6] Linking CLI scripts & settings..."
 link_file "${REPO_DIR}/antigravity-cli/statusline.sh" "${TARGET_DIR}/antigravity-cli/statusline.sh"
 link_file "${REPO_DIR}/antigravity-cli/title.sh" "${TARGET_DIR}/antigravity-cli/title.sh"
-if [ -f "${REPO_DIR}/antigravity-cli/agy-switch-account.sh" ]; then
-  link_file "${REPO_DIR}/antigravity-cli/agy-switch-account.sh" "${TARGET_DIR}/antigravity-cli/agy-switch-account.sh"
-  chmod +x "${REPO_DIR}/antigravity-cli/agy-switch-account.sh"
+if [ -f "${REPO_DIR}/antigravity-cli/swagy.sh" ]; then
+  link_file "${REPO_DIR}/antigravity-cli/swagy.sh" "${TARGET_DIR}/antigravity-cli/swagy.sh"
+  chmod +x "${REPO_DIR}/antigravity-cli/swagy.sh"
 fi
 if [ -f "${REPO_DIR}/antigravity-cli/settings.json" ]; then
   link_file "${REPO_DIR}/antigravity-cli/settings.json" "${TARGET_DIR}/antigravity-cli/settings.json"
@@ -94,16 +94,18 @@ fi
 echo
 echo "[5/6] Linking binaries & CLI tools..."
 chmod +x "${REPO_DIR}/skills/ka-del-conversation/clean-conversations.sh" "${REPO_DIR}/skills/ka-del-conversation/scripts/clean_conversations.py"
-if [ -f "${REPO_DIR}/antigravity-cli/agy-switch-account.sh" ]; then
-  chmod +x "${REPO_DIR}/antigravity-cli/agy-switch-account.sh"
+if [ -f "${REPO_DIR}/antigravity-cli/swagy.sh" ]; then
+  chmod +x "${REPO_DIR}/antigravity-cli/swagy.sh"
 fi
 
 # Link to ~/.local/bin and ~/.gemini/antigravity-cli/bin (both in PATH)
 for bin_dir in "${HOME}/.local/bin" "${TARGET_DIR}/antigravity-cli/bin"; do
   if [ -d "${bin_dir}" ]; then
     link_file "${REPO_DIR}/skills/ka-del-conversation/clean-conversations.sh" "${bin_dir}/clean-conversations"
-    if [ -f "${REPO_DIR}/antigravity-cli/agy-switch-account.sh" ]; then
-      link_file "${REPO_DIR}/antigravity-cli/agy-switch-account.sh" "${bin_dir}/agy-switch"
+    if [ -f "${REPO_DIR}/antigravity-cli/swagy.sh" ]; then
+      link_file "${REPO_DIR}/antigravity-cli/swagy.sh" "${bin_dir}/swagy"
+      link_file "${REPO_DIR}/antigravity-cli/swagy.sh" "${bin_dir}/agy-switch"
+      link_file "${REPO_DIR}/antigravity-cli/swagy.sh" "${bin_dir}/agy-switch-account"
     fi
   fi
 done
