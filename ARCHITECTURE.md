@@ -30,6 +30,13 @@ graph TD
         Statusline[statusline.sh]
         TitleScript[title.sh]
         TmuxCache[/tmp/tmux_agent_state_*.json]
+        Swagy[swagy / swagy.sh]
+    end
+
+    subgraph Authentication & Keychain
+        Keychain[(macOS Keychain: gemini/antigravity)]
+        AccountTokens[~/.gemini/accounts/*.token]
+        AccountsJSON[google_accounts.json]
     end
 
     subgraph MCP Integrations
@@ -53,6 +60,9 @@ graph TD
     CLI --> TitleScript
     Statusline --> TmuxCache
     TitleScript --> TmuxCache
+    Swagy --> Keychain
+    Swagy --> AccountTokens
+    Swagy --> AccountsJSON
 
     Core --> BeforeToolHook
     BeforeToolHook --> RTKHook
@@ -132,6 +142,28 @@ sequenceDiagram
 
     SL->>Cache: Read transcript.jsonl (cached 2s) for active Skill & MCP
     SL->>CLI: Render formatted ANSI output (1-line wide / 2-line standard)
+```
+
+### 2.3 Account Switching Flow (`swagy`)
+```mermaid
+sequenceDiagram
+    participant Dev as Developer
+    participant Swagy as swagy CLI / Python
+    participant KS as macOS Keychain (gemini/antigravity)
+    participant Tokens as ~/.gemini/accounts/<email>.token
+    participant GoogleAcc as google_accounts.json
+    participant Cache as Session Cache (last_conversations.json)
+
+    Dev->>Swagy: Execute `swagy pwa` / `swagy kaa`
+    Swagy->>KS: Read current active token & extract email
+    alt Current token exists
+        Swagy->>Tokens: Backup current token to <email>.token (chmod 600)
+    end
+    Swagy->>Tokens: Read target account token (<target>.token)
+    Swagy->>KS: Overwrite Keychain entry with target token
+    Swagy->>GoogleAcc: Update `active` email field
+    Swagy->>Cache: Reset cache to `{}` to prevent session bleed
+    Swagy->>Dev: Report switch completed (ready for new agy session)
 ```
 
 ---
