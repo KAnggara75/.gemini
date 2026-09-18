@@ -133,3 +133,15 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 - **Context**: Developer menggunakan dua akun Google (`pakaiwa.id@gmail.com` dan `kaanggara75@gmail.com`) untuk mengakses Antigravity CLI. Sebelumnya, beralih akun memerlukan proses re-autentikasi manual berulang yang menghapus token yang sedang aktif di macOS Keychain.
 - **Decision**: Mengembangkan utilitas CLI [`antigravity-cli/swagy.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/swagy.sh) berbasis Python 3 yang di-symlink sebagai binary `swagy` di `~/.local/bin/` dan `~/.gemini/antigravity-cli/bin/`. Script menyimpan token per-akun secara lokal pada `~/.gemini/accounts/<email>.token` (permission `600`), melakukan backup otomatis token aktif sebelum switch, merestorasi token akun target ke Keychain entry `gemini / antigravity`, memperbarui `~/.gemini/google_accounts.json`, dan mengosongkan file cache percakapan untuk mencegah tumpang-tindih sesi. Menyediakan alias cepat: `pwa` (`pakaiwa.id@gmail.com`) dan `kaa` (`kaanggara75@gmail.com`).
 - **Consequences**: Pergantian akun Google dapat dilakukan instan via terminal (`swagy pwa` atau `swagy kaa`) tanpa re-login manual. File token tersimpan di direktori lokal dengan permission ketat (`700`/`600`) dan terproteksi dari Git tracking.
+
+---
+
+## ADR-013: Konfigurasi Subagent Khusus Java Tech Lead & Architect (`java-dev-lead`)
+
+- **Status**: Accepted
+- **Date**: 2026-09-18
+- **Source**: Developer request
+- **Context**: Tim memerlukan kapabilitas AI khusus yang bertindak sebagai Technical Lead dan Solutions Architect untuk ekosistem Java modern (Java 17/21+, Quarkus, Spring Boot 3.x, Apache Kafka reaktif, Hexagonal/Clean Architecture, dan Domain-Driven Design), mampu merancang arsitektur microservices end-to-end, memastikan zero-allocation hot paths, virtual thread optimization, serta kepatuhan keamanan enterprise.
+- **Decision**: Mendefinisikan subagent role [`config/agents/java-dev-lead/agent.md`](file:///Users/i/work/KAnggara75/.gemini/config/agents/java-dev-lead/agent.md) dengan nama `java-dev-lead`. Subagent dibekali toolset lengkap (`run_command`, `view_file`, `write_to_file`, `replace_file_content`, `call_mcp_tool`) dan akses MCP server (`git`, `filesystem`, `context7`, `jira`, `postman`).
+- **Consequences**: Desain arsitektur, refactoring berskala besar, integrasi Kafka reaktif, dan scaffolding arsitektur Hexagonal dapat didelegasikan ke subagent `java-dev-lead` secara mandiri tanpa mencemari context window utama.
+

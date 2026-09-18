@@ -52,6 +52,7 @@ graph TD
     subgraph Subagents & Roles
         DevOpsAgent[DevOps Engineer]
         CodeReviewerAgent[Code Reviewer - Java & Go]
+        JavaDevLeadAgent[Java Tech Lead & Architect]
     end
 
     Installer -->|ln -sf / ln -f| TargetDir

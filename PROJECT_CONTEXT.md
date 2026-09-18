@@ -30,6 +30,7 @@ Repository `.gemini` adalah repositori manajemen konfigurasi (*dotfiles* dan *cu
 3. **Specialized Subagents**:
    - **`devops`**: Subagent operasional kontainer (Podman), klaster k8s, dan pipeline CI/CD.
    - **`code-reviewer`**: Subagent peninjau kode statis tingkat lanjut khusus Java (Quarkus, Kafka, REST Client) dan Go.
+   - **`java-dev-lead`**: Subagent Java Tech Lead & Solutions Architect untuk perancangan arsitektur microservice (Quarkus/Spring Boot), arsitektur reaktif (Kafka, Mutiny), Hexagonal/DDD, dan high-performance enterprise Java.
 4. **RTK (Rust Token Killer)**: Proxy CLI lokal yang memfilter dan mengompres output perintah terminal standar untuk menghemat token.
 5. **MCP Servers**: Daemon/proses yang menyediakan kapabilitas tambahan (k8s cluster inspection, container status, git diffing, memory indexing, Postman API collections/environments, dan Jira issue tracking).
 
