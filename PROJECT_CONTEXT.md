@@ -15,6 +15,7 @@ Repository `.gemini` adalah repositori manajemen konfigurasi (*dotfiles* dan *cu
   - Integrasi MCP client (`mcp_config.json`).
   - Terminal statusline dan audio notification hooks macOS.
   - Script installer dan symlink/hardlink orchestrator (`install.sh`).
+  - Utilitas CLI akun ganda Antigravity (`swagy.sh` / `swagy`).
   - Custom skills yang dipasang ke `~/.agents/skills/`.
   - Definisi custom subagent role (`config/agents/devops`, `config/agents/code-reviewer`).
 - **Out-of-Scope**:
