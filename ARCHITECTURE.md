@@ -141,7 +141,6 @@ sequenceDiagram
         SL->>Target: Re-establish symlink (self-healing)
     end
 
-    SL->>Cache: Read transcript.jsonl (cached 2s) for active Skill & MCP
     SL->>CLI: Render formatted ANSI output (1-line wide / 2-line standard)
 ```
 
@@ -171,9 +170,8 @@ sequenceDiagram
 
 ## 3. Concurrency & Resource Management
 - **Non-Blocking Audio Alerts**: Seluruh panggilan audio (`afplay` dan `osascript`) dijalankan pada asynchronous subshell background `(...) & 2>/dev/null` sehingga loop rendering CLI tidak pernah mengalami block atau latensi.
-- **I/O Debouncing & Cache**:
+- **I/O Debouncing**:
   - Peringatan audio dibatasi rate-limit minimal **4 detik** via `/tmp/antigravity_last_confirm_sound`.
-  - Pembacaan log transkrip untuk deteksi aktif Skill/MCP dibatasi interval cache **2 detik** via `/tmp/antigravity_skill_mcp_*.ts`.
 - **Atomic File Writes Mitigation**: Runtime CLI melakukan atomic file rename saat memperbarui `settings.json`. Arsitektur statusline mengimplementasikan *asynchronous self-healing watcher* untuk mendeteksi pemutusan link dan segera merestorasi tautan ke repositori.
 
 ---
