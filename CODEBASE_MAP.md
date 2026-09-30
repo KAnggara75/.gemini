@@ -16,7 +16,7 @@
 - **Responsibility**: Pengaturan khusus terminal CLI, pemantau statusline tmux, dan updater judul jendela.
 - **Entry / Key Files**:
   - [`antigravity-cli/settings.json`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/settings.json) — Whitelist perizinan tool/command (`permissions.allow`), trusted workspaces, model AI, dan path command runner.
-  - [`antigravity-cli/statusline.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/statusline.sh) — Script statusline responsif (single line/multi-line); memonitor token usage, git branch, task/subagent count, self-healing symlink, notifikasi audio prompt, serta status real-time Skill/MCP.
+  - [`antigravity-cli/statusline.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/statusline.sh) — Script statusline responsif (single line/multi-line); memonitor token usage, persentase 5-hour quota & waktu reset lokal (`🕒HH:MM`), git branch, task/subagent count, self-healing symlink, dan notifikasi audio prompt.
   - [`antigravity-cli/title.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/title.sh) — Script formatting judul jendela terminal / tmux pane berbasis agent state dan nama workspace.
   - [`antigravity-cli/swagy.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/swagy.sh) — CLI switcher akun Google ganda (`pwa` & `kaa`) via macOS Keychain dan `google_accounts.json`.
 - **Dependencies**: `jq`, `afplay` (macOS), `osascript`, `bc`, `sqlite3`, `tmux`, Python 3.
