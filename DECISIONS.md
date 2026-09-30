@@ -145,3 +145,17 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 - **Decision**: Mendefinisikan subagent role [`config/agents/java-dev-lead/agent.md`](file:///Users/i/work/KAnggara75/.gemini/config/agents/java-dev-lead/agent.md) dengan nama `java-dev-lead`. Subagent dibekali toolset lengkap (`run_command`, `view_file`, `write_to_file`, `replace_file_content`, `call_mcp_tool`) dan akses MCP server (`git`, `filesystem`, `context7`, `jira`, `postman`).
 - **Consequences**: Desain arsitektur, refactoring berskala besar, integrasi Kafka reaktif, dan scaffolding arsitektur Hexagonal dapat didelegasikan ke subagent `java-dev-lead` secara mandiri tanpa mencemari context window utama.
 
+---
+
+## ADR-014: Penyederhanaan Statusline (5-Hour Quota, Reset Clock, & Penghapusan Scraping Transkrip)
+
+- **Status**: Accepted
+- **Date**: 2026-09-30
+- **Source**: Developer request & Refactoring [`antigravity-cli/statusline.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/statusline.sh)
+- **Context**: Statusline sebelumnya menjalankan background subprocess Python untuk men-scrape file `transcript.jsonl` guna mendeteksi pemanggilan aktif MCP dan Skill. Hal ini menimbulkan overhead CPU/disk I/O, file cache sementara di `/tmp/antigravity_skill_mcp_*`, serta tampilan statusline yang terlalu padat bersama alias akun. Developer juga memerlukan visibilitas sisa kuota 5 jam model (`quota["gemini-5h"]` atau `quota["3p-5h"]`) dan jam reset kuota lokal.
+- **Decision**: 
+  1. Menghapus scraping transkrip aktif MCP/Skill dan alias akun dari [`antigravity-cli/statusline.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/statusline.sh).
+  2. Mengekstrak persentase 5-hour quota (`QUOTA_PCT`) dan sisa detik reset (`QUOTA_RESET_SEC`), lalu mengonversinya ke waktu jam lokal menggunakan `date -r` dengan format ikon `⏳<pct>% 🕒<HH:MM>`.
+  3. Memperbarui [`install.sh`](file:///Users/i/work/KAnggara75/.gemini/install.sh) agar menyinkronkan subdirektori skills ke tiga target sekaligus: `~/.agents/skills/`, `~/.gemini/antigravity-cli/skills/`, dan `~/.gemini/config/skills/`.
+- **Consequences**: Statusline menjadi jauh lebih ringan, cepat, tanpa background file scraping transkrip, serta menyajikan informasi kuota dan waktu reset yang bersih dan mudah dibaca langsung dari terminal. Target direktori skills kini kompatibel dengan berbagai skema discovery Antigravity CLI maupun Core.
+
