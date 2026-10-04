@@ -1,11 +1,11 @@
 ---
 name: ka-context
-description: "Bootstrap project memory and architectural documentation from an active codebase. Analyzes directory layout, dependency manifests, runtime entry points, architectural patterns, concurrency models, data boundaries, and technical debt. Generates CODEBASE_MAP.md, ARCHITECTURE.md, PROJECT_CONTEXT.md, DECISIONS.md, and TODO.md with token-efficient RTK inspection."
+description: "Bootstrap project memory and architectural documentation from an active codebase. Analyzes directory layout, dependency manifests, runtime entry points, architectural patterns, concurrency models, data boundaries, and technical debt. Generates CODEBASE_MAP.md, ARCHITECTURE.md, PROJECT_CONTEXT.md, DECISIONS.md, and TODO.md inside the .context/ directory, and maintains AGENTS.md at the repository root. Supports automatic migration from legacy root context files to .context/."
 user-invocable: true
 license: MIT
 compatibility: Designed for Antigravity AI, Claude Code, and git-based repositories.
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
   purpose: "Project memory bootstrap and architectural documentation"
   mode: "read-only analysis with structured documentation generation"
 allowed-tools: Bash(git:*) Bash(rtk:*) Read Grep Glob
@@ -21,6 +21,7 @@ You act as a **Staff Software Architect** tasked with building grounded, token-e
 3. Identify sharp, actionable knowledge gaps (maximum 5 critical questions).
 4. Record architectural decisions into ADRs without overwriting historical decisions (*append-only*).
 5. Establish a baseline memory so subsequent AI agents do not need to rediscover the system from scratch.
+6. Centralize baseline project memory inside the `.context/` folder, maintain agent instructions in `AGENTS.md` at root, and automatically migrate legacy root-level context files into `.context/`.
 
 ---
 
@@ -33,21 +34,44 @@ You act as a **Staff Software Architect** tasked with building grounded, token-e
   - `UNKNOWN`: No evidence found in repository (inquire with developer if crucial).
 - **Anti-Hallucination**: Never assume architecture patterns solely based on directory names (e.g., having `controllers/` does not guarantee pure MVC).
 - **Token Efficiency First**: Use `rtk` when available (`rtk git ...`), prefer shallow depth-limited scans, and avoid dumping raw files unconditionally.
-- **Non-Destructive**: Do not alter application code. Only designated documentation files may be created or updated.
+- **Non-Destructive**: Do not alter application code. Only designated documentation files in `.context/` and `AGENTS.md` at the repository root may be created or updated.
 
 ---
 
 ## Deliverables Checklist
-This skill produces and maintains 5 core documents at the repository root:
-1. `CODEBASE_MAP.md` — Module navigation map, responsibilities, dependencies, and consumers.
-2. `ARCHITECTURE.md` — Component diagrams, request lifecycles, concurrency models, error boundaries, and telemetry.
-3. `PROJECT_CONTEXT.md` — High-level purpose, domain glossary, system boundaries, and runtime constraints.
-4. `DECISIONS.md` — Architecture Decision Records (ADRs) capturing developer decisions (append-only).
-5. `TODO.md` — Inventory of technical debt, code annotations (TODO/FIXME), and immediate improvements.
+This skill produces and maintains documentation in two locations:
+
+### 1. Root Agent Directive (`AGENTS.md`)
+- `AGENTS.md` — High-level quick reference placed at the repository root for AI pair-programmers and agents. Points to `.context/`, provides workspace guidelines, code conventions, available commands/skills, and runtime safety instructions.
+
+### 2. Context Directory (`.context/`)
+All detailed baseline architectural documents reside inside `.context/`:
+1. `.context/CODEBASE_MAP.md` — Module navigation map, responsibilities, dependencies, and consumers.
+2. `.context/ARCHITECTURE.md` — Component diagrams, request lifecycles, concurrency models, error boundaries, and telemetry.
+3. `.context/PROJECT_CONTEXT.md` — High-level purpose, domain glossary, system boundaries, and runtime constraints.
+4. `.context/DECISIONS.md` — Architecture Decision Records (ADRs) capturing developer decisions (append-only).
+5. `.context/TODO.md` — Inventory of technical debt, code annotations (TODO/FIXME), and immediate improvements.
 
 ---
 
 ## Step-by-Step Workflow
+
+### STEP 0 — Migration & Directory Preparation (.context/)
+
+Before analyzing or generating files, ensure proper directory structure:
+1. **Ensure Directory**: Ensure `.context/` directory exists (`mkdir -p .context`).
+2. **Auto-Migration of Legacy Root Files**:
+   - Check if any of the baseline documentation files exist at the repository root:
+     - `CODEBASE_MAP.md`
+     - `ARCHITECTURE.md`
+     - `PROJECT_CONTEXT.md`
+     - `DECISIONS.md`
+     - `TODO.md`
+   - If found at root, move them into `.context/` (e.g. `git mv <file> .context/` or `mv <file> .context/`). If destination already exists in `.context/`, merge or update into `.context/<file>` and remove the root counterpart to keep the root clean.
+3. **Maintain Root `AGENTS.md`**:
+   - Create or update `AGENTS.md` at the repository root. `AGENTS.md` acts as the primary landing page and high-level guideline for AI agents (pointing to `.context/` documents for deep architecture and rules).
+
+---
 
 ### STEP 1 — Token-Efficient Codebase Discovery
 
@@ -84,7 +108,7 @@ Identify patterns from concrete codebase evidence:
 
 ---
 
-### STEP 2 — Generate / Update `CODEBASE_MAP.md`
+### STEP 2 — Generate / Update `.context/CODEBASE_MAP.md`
 
 Map each primary directory or subsystem into standard format:
 
@@ -104,7 +128,7 @@ Map each primary directory or subsystem into standard format:
 
 ---
 
-### STEP 3 — Generate / Update `ARCHITECTURE.md`
+### STEP 3 — Generate / Update `.context/ARCHITECTURE.md`
 
 Document technical architecture comprehensively:
 
@@ -153,10 +177,10 @@ Before finalizing:
 
 ---
 
-### STEP 5 — Update / Generate `DECISIONS.md` (Append-Only)
+### STEP 5 — Update / Generate `.context/DECISIONS.md` (Append-Only)
 
 Record every developer decision as an Architecture Decision Record (ADR):
-- **MANDATORY RULE**: Always read existing `DECISIONS.md` first. **NEVER OVERWRITE** previous ADRs.
+- **MANDATORY RULE**: Always read existing `.context/DECISIONS.md` first. **NEVER OVERWRITE** previous ADRs.
 - Always use incremental numbering (e.g., if `ADR-005` exists, create `ADR-006`).
 - **Jira Issue Synchronization**:
   - Jika terdapat nomor tiket Jira (misal: `SDPS-1781`, `PROJ-123`) yang terdeteksi dari git branch, commit message, pull request, atau percakapan, **SELALU tanyakan kepada developer** apakah ingin menyinkronkan konteks keputusan berdasarkan issue Jira tersebut.
@@ -177,7 +201,7 @@ ADR Format:
 
 ---
 
-### STEP 6 — Generate / Update `PROJECT_CONTEXT.md`
+### STEP 6 — Generate / Update `.context/PROJECT_CONTEXT.md`
 
 Provide a high-level system overview:
 - **Project Purpose**: Core business problems solved.
@@ -191,7 +215,7 @@ Provide a high-level system overview:
 
 ---
 
-### STEP 7 — Generate / Update `TODO.md`
+### STEP 7 — Generate / Update `.context/TODO.md`
 
 Search for source annotations using keywords (`TODO`, `FIXME`, `HACK`, `BUG`, `DEPRECATED`), excluding build and vendor folders.
 
@@ -214,15 +238,15 @@ _Long-term architectural and refactoring initiatives._
 
 ---
 
-### STEP 8 — Validation & Final Audit
+### STEP 8 — Maintain Root `AGENTS.md` & Final Audit
 
-Perform final verification:
-1. **Factual Consistency**: Verify zero conflicting statements across all 5 documents.
-2. **No Unverified Claims**: Ensure every architectural claim points to valid file paths.
-3. **All Output Files Present**:
-   - `CODEBASE_MAP.md`
-   - `ARCHITECTURE.md`
-   - `PROJECT_CONTEXT.md`
-   - `DECISIONS.md`
-   - `TODO.md`
-4. Present an executive summary of the baseline memory to the developer.
+1. **Verify / Update `AGENTS.md` at Repository Root**:
+   - Ensure root `AGENTS.md` exists and contains:
+     - Workspace guidelines & identity.
+     - Reference links pointing to `.context/` documents (`.context/CODEBASE_MAP.md`, `.context/ARCHITECTURE.md`, `.context/PROJECT_CONTEXT.md`, `.context/DECISIONS.md`, `.context/TODO.md`).
+     - Available local skills/tools and delivery standards.
+2. **Cleanliness Verification**:
+   - Ensure no obsolete duplicate context files remain lingering at the root level (`CODEBASE_MAP.md`, `ARCHITECTURE.md`, `PROJECT_CONTEXT.md`, `DECISIONS.md`, `TODO.md` should solely live inside `.context/`).
+3. **Factual Consistency**: Verify zero conflicting statements across all documents.
+4. **No Unverified Claims**: Ensure every architectural claim points to valid file paths.
+5. **Present Executive Summary**: Report the baseline memory summary and migration results to the developer.

@@ -1,7 +1,7 @@
 {
   "allowNonWorkspaceAccess": true,
   "artifactReviewPolicy": "always-proceed",
-  "model": "Gemini 3.8 Flash (Low)",
+  "model": "Gemini 3.8 Flash (High)",
   "notifications": true,
   "permissions": {
     "allow": [
@@ -198,7 +198,12 @@
     "/Users/i/work/ifkd/core",
     "/Users/i/work/ifkd/aowf",
     "/Users/i/work/ifkd/kongPs",
-    "/Applications"
+    "/Applications",
+    "/Users/i/work/aops/surrender",
+    "/Users/i/work/github",
+    "/Users/i/work/vps",
+    "/Users/i/work/PakaiWA/PakaiWA",
+    "/Users/i/work/timesheet"
   ],
   "useG1Credits": true,
   "verbosity": "low"
