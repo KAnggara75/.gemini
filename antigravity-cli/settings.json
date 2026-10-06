@@ -1,7 +1,7 @@
 {
   "allowNonWorkspaceAccess": true,
   "artifactReviewPolicy": "always-proceed",
-  "model": "Gemini 3.8 Flash (High)",
+  "model": "Gemini 3.8 Flash (Low)",
   "notifications": true,
   "permissions": {
     "allow": [
@@ -203,7 +203,12 @@
     "/Users/i/work/github",
     "/Users/i/work/vps",
     "/Users/i/work/PakaiWA/PakaiWA",
-    "/Users/i/work/timesheet"
+    "/Users/i/work/timesheet",
+    "/Users/i/work/KAnggara/ServerSetup",
+    "/Users/i/work/KAnggara/k8s/k8s-control",
+    "/Users/i/work/KAnggara/k8s/k8s-core",
+    "/Users/i/work/KAnggara/k8s/workloads",
+    "/Users/i/work/KAnggara/DevOps"
   ],
   "useG1Credits": true,
   "verbosity": "low"

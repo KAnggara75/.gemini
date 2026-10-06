@@ -48,3 +48,4 @@ Skill tersimpan di `skills/` dan disinkronkan ke `~/.agents/skills/`, `~/.gemini
 ## 4. Delivery Standards
 - Gunakan Conventional Commits: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`, `ci`.
 - Utamakan implementasi lokal (*contained*) daripada menambah runtime dependency pihak ketiga.
+- **Java Build Standard**: Untuk project Java, selalu gunakan `./mvnw clean package -DskipTests` alih-alih `compile`.
