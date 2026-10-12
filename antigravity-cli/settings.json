@@ -151,7 +151,8 @@
   "showTips": false,
   "statusLine": {
     "type": "command",
-    "command": "~/.gemini/antigravity-cli/statusline.sh"
+    "command": "~/.gemini/antigravity-cli/statusline.sh",
+    "enabled": true
   },
   "title": {
     "type": "command",
@@ -208,7 +209,10 @@
     "/Users/i/work/KAnggara/k8s/k8s-control",
     "/Users/i/work/KAnggara/k8s/k8s-core",
     "/Users/i/work/KAnggara/k8s/workloads",
-    "/Users/i/work/KAnggara/DevOps"
+    "/Users/i/work/KAnggara/DevOps",
+    "/Users/i/work/ifde/ps-wf-dev",
+    "/Users/i/work/selenium",
+    "/Users/i/work/podmans/configs/smocker"
   ],
   "useG1Credits": true,
   "verbosity": "low"

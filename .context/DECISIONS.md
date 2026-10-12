@@ -127,12 +127,12 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 
 ## ADR-012: CLI Multi-Account Switcher (`swagy`) via macOS Keychain dan Token Backups
 
-- **Status**: Accepted
+- **Status**: Deprecated / Superseded by ADR-015
 - **Date**: 2026-09-18
 - **Source**: Developer request & Codebase implementation (`antigravity-cli/swagy.sh`)
 - **Context**: Developer menggunakan dua akun Google (`pakaiwa.id@gmail.com` dan `kaanggara75@gmail.com`) untuk mengakses Antigravity CLI. Sebelumnya, beralih akun memerlukan proses re-autentikasi manual berulang yang menghapus token yang sedang aktif di macOS Keychain.
 - **Decision**: Mengembangkan utilitas CLI [`antigravity-cli/swagy.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/swagy.sh) berbasis Python 3 yang di-symlink sebagai binary `swagy` di `~/.local/bin/` dan `~/.gemini/antigravity-cli/bin/`. Script menyimpan token per-akun secara lokal pada `~/.gemini/accounts/<email>.token` (permission `600`), melakukan backup otomatis token aktif sebelum switch, merestorasi token akun target ke Keychain entry `gemini / antigravity`, memperbarui `~/.gemini/google_accounts.json`, dan mengosongkan file cache percakapan untuk mencegah tumpang-tindih sesi. Menyediakan alias cepat: `pwa` (`pakaiwa.id@gmail.com`) dan `kaa` (`kaanggara75@gmail.com`).
-- **Consequences**: Pergantian akun Google dapat dilakukan instan via terminal (`swagy pwa` atau `swagy kaa`) tanpa re-login manual. File token tersimpan di direktori lokal dengan permission ketat (`700`/`600`) dan terproteksi dari Git tracking.
+- **Consequences**: Pergantian akun Google dapat dilakukan instan via terminal (`swagy pwa` atau `swagy kaa`) tanpa re-login manual. File token tersimpan di direktori lokal dengan permission ketat (`700`/`600`) dan terproteksi dari Git tracking. (Catatan: Dihapus dan didepresiasi pada ADR-015 atas permintaan developer).
 
 ---
 
@@ -158,4 +158,20 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
   2. Mengekstrak persentase 5-hour quota (`QUOTA_PCT`) dan sisa detik reset (`QUOTA_RESET_SEC`), lalu mengonversinya ke waktu jam lokal menggunakan `date -r` dengan format ikon `⏳<pct>% 🕒<HH:MM>`.
   3. Memperbarui [`install.sh`](file:///Users/i/work/KAnggara75/.gemini/install.sh) agar menyinkronkan subdirektori skills ke tiga target sekaligus: `~/.agents/skills/`, `~/.gemini/antigravity-cli/skills/`, dan `~/.gemini/config/skills/`.
 - **Consequences**: Statusline menjadi jauh lebih ringan, cepat, tanpa background file scraping transkrip, serta menyajikan informasi kuota dan waktu reset yang bersih dan mudah dibaca langsung dari terminal. Target direktori skills kini kompatibel dengan berbagai skema discovery Antigravity CLI maupun Core.
+
+---
+
+## ADR-015: Penghapusan Utilitas Multi-Account Switcher (`swagy`)
+
+- **Status**: Accepted
+- **Date**: 2026-10-12
+- **Source**: Developer request
+- **Context**: Utilitas CLI switcher akun ganda `swagy.sh` yang memanipulasi token OAuth dan macOS Keychain tidak diperbolehkan dalam kebijakan keamanan dan operasional lingkungan kerja.
+- **Decision**: 
+  1. Menghapus script [`antigravity-cli/swagy.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/swagy.sh) secara permanen dari repositori.
+  2. Menghapus symlink dan binary terkait (`swagy`, `agy-switch`, `agy-switch-account`) dari `~/.local/bin/` dan `~/.gemini/antigravity-cli/bin/`.
+  3. Memperbarui [`install.sh`](file:///Users/i/work/KAnggara75/.gemini/install.sh) agar tidak lagi memproses maupun menautkan `swagy.sh`.
+  4. Memperbarui seluruh dokumentasi arsitektur dan peta codebase untuk mencerminkan penghapusan fitur ini.
+- **Consequences**: Tidak ada lagi bypass atau manipulasi token Keychain ganda di level CLI lokal. Manajemen akun Antigravity sepenuhnya mengikuti flow login resmi bawaan client.
+
 
