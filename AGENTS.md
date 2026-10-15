@@ -30,6 +30,7 @@ Baseline memory proyek, arsitektur, dan keputusan teknis tersimpan rapi di dalam
 Skill tersimpan di `skills/` dan disinkronkan ke `~/.agents/skills/`, `~/.gemini/antigravity-cli/skills/`, dan `~/.gemini/config/skills/`:
 - **`ka-git-commit`**: Conventional Commit generator & runner (mendukung mode instan `commit A` / `commit 1/1` dan `commit B` / `commit all`).
 - **`ka-pr`**: Otomasi pembuatan Pull Request ke Bitbucket Server On-Premise via REST API.
+- **`ka-review`**: Code reviewer & PR quality gatekeeper (Java/Quarkus/Spring Boot/Kafka/Go) dengan audit NPE, thread safety, memory leak, dan actionable diffs.
 - **`ka-del-conversation`**: Utilitas inspeksi dan pembersihan database histori percakapan Antigravity/CLI/IDE via Python & SQLite.
 - **`ka-context`**: Bootstrap project memory, arsitektur sistem, ADR, dan pelacakan technical debt ke direktori `.context/`.
 
