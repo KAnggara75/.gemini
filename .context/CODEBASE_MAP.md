@@ -53,7 +53,8 @@
 - **Sub-Modul**:
   - [`skills/ka-git-commit/SKILL.md`](file:///Users/i/work/KAnggara75/.gemini/skills/ka-git-commit/SKILL.md) — Runbook pembuatan pesan Conventional Commit dengan prioritas atomic commit per-file (1 per 1), auto-commit 1 file, dan direct trigger mode (Mode A vs Mode B).
   - [`skills/ka-pr/SKILL.md`](file:///Users/i/work/KAnggara75/.gemini/skills/ka-pr/SKILL.md) — Runbook pembuatan Pull Request otomatis ke Bitbucket Server On-Premise berbasis Git remote aktif tanpa hardcoding.
+  - [`skills/ka-review/SKILL.md`](file:///Users/i/work/KAnggara75/.gemini/skills/ka-review/SKILL.md) — Runbook review kode dan PR quality audit mendalam untuk Java (Quarkus/Spring Boot/Kafka) dan Go.
   - [`skills/ka-del-conversation/`](file:///Users/i/work/KAnggara75/.gemini/skills/ka-del-conversation/) — Utilitas CLI (`clean-conversations`) dan script Python untuk inspeksi serta pembersihan database percakapan lama Antigravity/IDE/CLI.
   - [`skills/ka-context/SKILL.md`](file:///Users/i/work/KAnggara75/.gemini/skills/ka-context/SKILL.md) — Bootstrap project memory dan arsitektur repository.
 - **Dependencies**: Git, Python 3, `sqlite3`, `curl`.
-- **Consumers**: User prompt, slash commands (`/ka-git-commit`, `/ka-pr`, `/ka-del-conversation`, `/ka-context`).
+- **Consumers**: User prompt, slash commands (`/ka-git-commit`, `/ka-pr`, `/ka-review`, `/ka-del-conversation`, `/ka-context`).
