@@ -174,4 +174,19 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
   4. Memperbarui seluruh dokumentasi arsitektur dan peta codebase untuk mencerminkan penghapusan fitur ini.
 - **Consequences**: Tidak ada lagi bypass atau manipulasi token Keychain ganda di level CLI lokal. Manajemen akun Antigravity sepenuhnya mengikuti flow login resmi bawaan client.
 
+---
+
+## ADR-016: Pemisahan Tanggung Jawab Pembuatan PR (`ka-pr`) dan Code Reviewer (`ka-review`)
+
+- **Status**: Accepted
+- **Date**: 2026-10-15
+- **Source**: Developer request
+- **Context**: Sebelumnya, panduan dan aturan review Java (NPE guardrails, thread safety, reactive streaming, memory leaks) tercampur di bagian bawah runbook [`skills/ka-pr/SKILL.md`](file:///Users/i/work/KAnggara75/.gemini/skills/ka-pr/SKILL.md). Hal ini membuat fokus skill pembuatan PR menjadi bias antara otomatisasi API Bitbucket Server dengan tugas pemeriksaan/review kualitas kode.
+- **Decision**: 
+  1. Memisahkan tanggung jawab secara tegas (*Single Responsibility Principle*).
+  2. Mengembalikan [`skills/ka-pr/SKILL.md`](file:///Users/i/work/KAnggara75/.gemini/skills/ka-pr/SKILL.md) murni untuk alur kerja pembuatan Pull Request ke Bitbucket Server On-Premise.
+  3. Membuat skill baru terdedikasi [`skills/ka-review/SKILL.md`](file:///Users/i/work/KAnggara75/.gemini/skills/ka-review/SKILL.md) (`ka-review`) khusus sebagai Code Reviewer dan PR Quality Gatekeeper (Java Quarkus/Spring Boot/Kafka dan Go), mencakup NPE prevention, memory leak/OOM elimination, concurrency safety, DRY, dan format laporan review terstruktur dengan actionable diffs.
+- **Consequences**: Alur kerja pembuatan PR menjadi bersih dan terfokus pada otentikasi serta REST API Bitbucket. Skill `ka-review` dapat dipanggil secara mandiri kapan saja untuk mereview diff, branch, maupun commit sebelum atau sesudah PR dibuat.
+
+
 
