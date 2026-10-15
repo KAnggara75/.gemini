@@ -43,6 +43,7 @@ Skill tersimpan di `skills/` dan tertaut ke `~/.agents/skills/`:
   - `commit B` / `commit all` -> Langsung eksekusi single combined commit tanpa dialog.
   - Single file changed -> Otomatis dieksekusi tanpa konfirmasi.
 - **`ka-pr`**: Otomasi pembuatan Pull Request ke Bitbucket Server On-Premise via REST API tanpa hardcoding host/project/repo.
+- **`ka-review`**: Code reviewer & PR quality gatekeeper (Java/Quarkus/Spring Boot/Kafka/Go) dengan audit NPE, thread safety, memory leak, dan actionable diffs.
 - **`ka-del-conversation`**: Inspeksi dan pembersihan database histori percakapan Antigravity/CLI/IDE via Python & SQLite.
 - **`ka-context`**: Bootstrap project memory, arsitektur sistem, ADR, dan tracking technical debt.
 
