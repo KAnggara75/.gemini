@@ -212,7 +212,11 @@
     "/Users/i/work/KAnggara/DevOps",
     "/Users/i/work/ifde/ps-wf-dev",
     "/Users/i/work/selenium",
-    "/Users/i/work/podmans/configs/smocker"
+    "/Users/i/work/podmans/configs/smocker",
+    "/Users/i/work/KAnggara75/IDXStock",
+    "/Users/i/dotprivate",
+    "/Users/i/work/kubeconfig",
+    "/Users/i/work/reviewer"
   ],
   "useG1Credits": true,
   "verbosity": "low"
