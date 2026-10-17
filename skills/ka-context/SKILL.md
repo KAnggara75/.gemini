@@ -34,6 +34,7 @@ You act as a **Staff Software Architect** tasked with building grounded, token-e
   - `UNKNOWN`: No evidence found in repository (inquire with developer if crucial).
 - **Anti-Hallucination**: Never assume architecture patterns solely based on directory names (e.g., having `controllers/` does not guarantee pure MVC).
 - **Token Efficiency First**: Use `rtk` when available (`rtk git ...`), prefer shallow depth-limited scans, and avoid dumping raw files unconditionally.
+- **Relative Workspace Links**: Always format file and markdown document links relative to the repository root using `file:///.context/...` or `file:///path/to/file` (e.g. `[PROJECT_CONTEXT.md](file:///.context/PROJECT_CONTEXT.md)` or `[file.ext](file:///src/file.ext)`), **NEVER** use machine-specific absolute user paths like `file:///Users/...` or `file:///home/...`. This ensures documents remain portable and clickable across different developers, machines, and workspaces.
 - **Non-Destructive**: Do not alter application code. Only designated documentation files in `.context/` and `AGENTS.md` at the repository root may be created or updated.
 
 ---
@@ -243,10 +244,10 @@ _Long-term architectural and refactoring initiatives._
 1. **Verify / Update `AGENTS.md` at Repository Root**:
    - Ensure root `AGENTS.md` exists and contains:
      - Workspace guidelines & identity.
-     - Reference links pointing to `.context/` documents (`.context/CODEBASE_MAP.md`, `.context/ARCHITECTURE.md`, `.context/PROJECT_CONTEXT.md`, `.context/DECISIONS.md`, `.context/TODO.md`).
+     - Reference links pointing to `.context/` documents using relative root format: `file:///.context/CODEBASE_MAP.md`, `file:///.context/ARCHITECTURE.md`, `file:///.context/PROJECT_CONTEXT.md`, `file:///.context/DECISIONS.md`, `file:///.context/TODO.md` (never machine-specific home paths).
      - Available local skills/tools and delivery standards.
 2. **Cleanliness Verification**:
    - Ensure no obsolete duplicate context files remain lingering at the root level (`CODEBASE_MAP.md`, `ARCHITECTURE.md`, `PROJECT_CONTEXT.md`, `DECISIONS.md`, `TODO.md` should solely live inside `.context/`).
 3. **Factual Consistency**: Verify zero conflicting statements across all documents.
-4. **No Unverified Claims**: Ensure every architectural claim points to valid file paths.
+4. **No Unverified Claims**: Ensure every architectural claim points to valid file paths using relative `file:///` URIs.
 5. **Present Executive Summary**: Report the baseline memory summary and migration results to the developer.
