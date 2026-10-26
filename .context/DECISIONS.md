@@ -76,7 +76,7 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 - **Date**: 2026-09-14
 - **Source**: Developer request
 - **Context**: Suara notifikasi sistem macOS (`Glass.aiff`) terdengar berulang/ganda saat prompt interaksi user muncul karena `ask_question` ditangani bersamaan oleh `rtk-hook-gemini.sh` dan `notify-decision.sh`.
-- **Decision**: Mengisolasi penanganan `ask_question` secara eksklusif ke [`hooks/notify-decision.sh`](file:///Users/i/work/KAnggara75/.gemini/hooks/notify-decision.sh) dan menghapus handler `ask_question` dari [`hooks/rtk-hook-gemini.sh`](file:///Users/i/work/KAnggara75/.gemini/hooks/rtk-hook-gemini.sh) sehingga `rtk-hook-gemini.sh` murni memproses perintah terminal (`run_command` / `run_shell_command`).
+- **Decision**: Mengisolasi penanganan `ask_question` secara eksklusif ke [`hooks/notify-decision.sh`](../hooks/notify-decision.sh) dan menghapus handler `ask_question` dari [`hooks/rtk-hook-gemini.sh`](../hooks/rtk-hook-gemini.sh) sehingga `rtk-hook-gemini.sh` murni memproses perintah terminal (`run_command` / `run_shell_command`).
 - **Consequences**: Audio prompt hanya berbunyi satu kali secara presisi setiap kali agent memerlukan keputusan atau masukan dari developer.
 
 ---
@@ -98,7 +98,7 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 - **Date**: 2026-09-14
 - **Source**: Developer request
 - **Context**: Pengembang memerlukan automated code review mendalam khusus untuk ekosistem Java (Quarkus, Kafka SmallRye Reactive Messaging, MicroProfile REST Client) dan Golang, dengan fokus utama pada deteksi kebocoran memori (OOM), mitigasi NullPointerException (NPE), konkurensi aman, serta penegakan prinsip DRY.
-- **Decision**: Mengonfigurasi subagent mandiri `code-reviewer` di [`config/agents/code-reviewer/agent.md`](file:///Users/i/work/KAnggara75/.gemini/config/agents/code-reviewer/agent.md) yang mengintegrasikan checklist audit NPE, unboxing trap, reactive stream backpressure, REST client socket cleanup, dan MapStruct/shared handlers DRY enforcement.
+- **Decision**: Mengonfigurasi subagent mandiri `code-reviewer` di [`config/agents/code-reviewer/agent.md`](../config/agents/code-reviewer/agent.md) yang mengintegrasikan checklist audit NPE, unboxing trap, reactive stream backpressure, REST client socket cleanup, dan MapStruct/shared handlers DRY enforcement.
 - **Consequences**: Analisis kode Java dan Go dapat didelegasikan secara terisolasi tanpa membebani context window percakapan utama, menghasilkan laporan review terstruktur dengan klasifikasi severity (Blocker, Major, Minor, Suggestion).
 
 ---
@@ -109,7 +109,7 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 - **Date**: 2026-09-14
 - **Source**: Developer request
 - **Context**: Pengembang memerlukan akses terpadu langsung dari Antigravity ke koleksi Postman API (workspaces, collections, environments) serta tiket Atlassian Jira, namun token API (`POSTMAN_API_KEY`, `JIRA_API_TOKEN`) tidak boleh bocor ke git repository publik.
-- **Decision**: Mendaftarkan MCP server `postman` (`@postman/postman-mcp-server`) dan `jira` (`mcp-jira`) ke dalam [`config/mcp_config.json`](file:///Users/i/work/KAnggara75/.gemini/config/mcp_config.json). Menggunakan mekanisme staging ganda untuk me-record versi template placeholder (`YOUR_POSTMAN_API_KEY`, `YOUR_JIRA_API_TOKEN`) ke git index sementara file fisik di mesin lokal tetap menyimpan secret aktif dan dilindungi oleh `git update-index --skip-worktree`.
+- **Decision**: Mendaftarkan MCP server `postman` (`@postman/postman-mcp-server`) dan `jira` (`mcp-jira`) ke dalam [`config/mcp_config.json`](../config/mcp_config.json). Menggunakan mekanisme staging ganda untuk me-record versi template placeholder (`YOUR_POSTMAN_API_KEY`, `YOUR_JIRA_API_TOKEN`) ke git index sementara file fisik di mesin lokal tetap menyimpan secret aktif dan dilindungi oleh `git update-index --skip-worktree`.
 - **Consequences**: Agent dapat mengeksekusi operasi Postman dan Jira secara langsung di mesin lokal tanpa ada risiko kebocoran kredensial saat repositori di-commit atau di-push ke GitHub.
 
 ---
@@ -120,7 +120,7 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 - **Date**: 2026-09-14
 - **Source**: Codebase evidence & developer validation
 - **Context**: Package `mcp-jira@0.1.0` mengalami kegagalan pada Atlassian Cloud karena dua hal: otentikasi mengirim format Bearer token (ditolak HTTP 403) dan memanggil endpoint `/rest/api/2/search` yang sudah dihapus permanen oleh Atlassian (HTTP 410 Gone / CHANGE-2046).
-- **Decision**: Mengganti package runner Jira MCP pada [`config/mcp_config.json`](file:///Users/i/work/KAnggara75/.gemini/config/mcp_config.json) menjadi `@aashari/mcp-server-atlassian-jira` yang menggunakan Jira Cloud REST API v3, format output TOON hemat token, dan konfigurasi environment terstandarisasi (`ATLASSIAN_SITE_NAME`, `ATLASSIAN_USER_EMAIL`, `ATLASSIAN_API_TOKEN`).
+- **Decision**: Mengganti package runner Jira MCP pada [`config/mcp_config.json`](../config/mcp_config.json) menjadi `@aashari/mcp-server-atlassian-jira` yang menggunakan Jira Cloud REST API v3, format output TOON hemat token, dan konfigurasi environment terstandarisasi (`ATLASSIAN_SITE_NAME`, `ATLASSIAN_USER_EMAIL`, `ATLASSIAN_API_TOKEN`).
 - **Consequences**: Pemanggilan issue dan pencarian JQL Jira berjalan lancar tanpa error 403/410, didukung pemfilteran respons via JMESPath (`jq`) untuk efisiensi token context window. Kredensial lokal tetap aman di bawah proteksi `git update-index --skip-worktree`.
 
 ---
@@ -131,7 +131,7 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 - **Date**: 2026-09-18
 - **Source**: Developer request & Codebase implementation (`antigravity-cli/swagy.sh`)
 - **Context**: Developer menggunakan dua akun Google (`pakaiwa.id@gmail.com` dan `kaanggara75@gmail.com`) untuk mengakses Antigravity CLI. Sebelumnya, beralih akun memerlukan proses re-autentikasi manual berulang yang menghapus token yang sedang aktif di macOS Keychain.
-- **Decision**: Mengembangkan utilitas CLI [`antigravity-cli/swagy.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/swagy.sh) berbasis Python 3 yang di-symlink sebagai binary `swagy` di `~/.local/bin/` dan `~/.gemini/antigravity-cli/bin/`. Script menyimpan token per-akun secara lokal pada `~/.gemini/accounts/<email>.token` (permission `600`), melakukan backup otomatis token aktif sebelum switch, merestorasi token akun target ke Keychain entry `gemini / antigravity`, memperbarui `~/.gemini/google_accounts.json`, dan mengosongkan file cache percakapan untuk mencegah tumpang-tindih sesi. Menyediakan alias cepat: `pwa` (`pakaiwa.id@gmail.com`) dan `kaa` (`kaanggara75@gmail.com`).
+- **Decision**: Mengembangkan utilitas CLI [`antigravity-cli/swagy.sh`](../antigravity-cli/swagy.sh) berbasis Python 3 yang di-symlink sebagai binary `swagy` di `~/.local/bin/` dan `~/.gemini/antigravity-cli/bin/`. Script menyimpan token per-akun secara lokal pada `~/.gemini/accounts/<email>.token` (permission `600`), melakukan backup otomatis token aktif sebelum switch, merestorasi token akun target ke Keychain entry `gemini / antigravity`, memperbarui `~/.gemini/google_accounts.json`, dan mengosongkan file cache percakapan untuk mencegah tumpang-tindih sesi. Menyediakan alias cepat: `pwa` (`pakaiwa.id@gmail.com`) dan `kaa` (`kaanggara75@gmail.com`).
 - **Consequences**: Pergantian akun Google dapat dilakukan instan via terminal (`swagy pwa` atau `swagy kaa`) tanpa re-login manual. File token tersimpan di direktori lokal dengan permission ketat (`700`/`600`) dan terproteksi dari Git tracking. (Catatan: Dihapus dan didepresiasi pada ADR-015 atas permintaan developer).
 
 ---
@@ -142,7 +142,7 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 - **Date**: 2026-09-18
 - **Source**: Developer request
 - **Context**: Tim memerlukan kapabilitas AI khusus yang bertindak sebagai Technical Lead dan Solutions Architect untuk ekosistem Java modern (Java 17/21+, Quarkus, Spring Boot 3.x, Apache Kafka reaktif, Hexagonal/Clean Architecture, dan Domain-Driven Design), mampu merancang arsitektur microservices end-to-end, memastikan zero-allocation hot paths, virtual thread optimization, serta kepatuhan keamanan enterprise.
-- **Decision**: Mendefinisikan subagent role [`config/agents/java-dev-lead/agent.md`](file:///Users/i/work/KAnggara75/.gemini/config/agents/java-dev-lead/agent.md) dengan nama `java-dev-lead`. Subagent dibekali toolset lengkap (`run_command`, `view_file`, `write_to_file`, `replace_file_content`, `call_mcp_tool`) dan akses MCP server (`git`, `filesystem`, `context7`, `jira`, `postman`).
+- **Decision**: Mendefinisikan subagent role [`config/agents/java-dev-lead/agent.md`](../config/agents/java-dev-lead/agent.md) dengan nama `java-dev-lead`. Subagent dibekali toolset lengkap (`run_command`, `view_file`, `write_to_file`, `replace_file_content`, `call_mcp_tool`) dan akses MCP server (`git`, `filesystem`, `context7`, `jira`, `postman`).
 - **Consequences**: Desain arsitektur, refactoring berskala besar, integrasi Kafka reaktif, dan scaffolding arsitektur Hexagonal dapat didelegasikan ke subagent `java-dev-lead` secara mandiri tanpa mencemari context window utama.
 
 ---
@@ -151,12 +151,12 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 
 - **Status**: Accepted
 - **Date**: 2026-09-30
-- **Source**: Developer request & Refactoring [`antigravity-cli/statusline.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/statusline.sh)
+- **Source**: Developer request & Refactoring [`antigravity-cli/statusline.sh`](../antigravity-cli/statusline.sh)
 - **Context**: Statusline sebelumnya menjalankan background subprocess Python untuk men-scrape file `transcript.jsonl` guna mendeteksi pemanggilan aktif MCP dan Skill. Hal ini menimbulkan overhead CPU/disk I/O, file cache sementara di `/tmp/antigravity_skill_mcp_*`, serta tampilan statusline yang terlalu padat bersama alias akun. Developer juga memerlukan visibilitas sisa kuota 5 jam model (`quota["gemini-5h"]` atau `quota["3p-5h"]`) dan jam reset kuota lokal.
 - **Decision**: 
-  1. Menghapus scraping transkrip aktif MCP/Skill dan alias akun dari [`antigravity-cli/statusline.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/statusline.sh).
+  1. Menghapus scraping transkrip aktif MCP/Skill dan alias akun dari [`antigravity-cli/statusline.sh`](../antigravity-cli/statusline.sh).
   2. Mengekstrak persentase 5-hour quota (`QUOTA_PCT`) dan sisa detik reset (`QUOTA_RESET_SEC`), lalu mengonversinya ke waktu jam lokal menggunakan `date -r` dengan format ikon `⏳<pct>% 🕒<HH:MM>`.
-  3. Memperbarui [`install.sh`](file:///Users/i/work/KAnggara75/.gemini/install.sh) agar menyinkronkan subdirektori skills ke tiga target sekaligus: `~/.agents/skills/`, `~/.gemini/antigravity-cli/skills/`, dan `~/.gemini/config/skills/`.
+  3. Memperbarui [`install.sh`](../install.sh) agar menyinkronkan subdirektori skills ke tiga target sekaligus: `~/.agents/skills/`, `~/.gemini/antigravity-cli/skills/`, dan `~/.gemini/config/skills/`.
 - **Consequences**: Statusline menjadi jauh lebih ringan, cepat, tanpa background file scraping transkrip, serta menyajikan informasi kuota dan waktu reset yang bersih dan mudah dibaca langsung dari terminal. Target direktori skills kini kompatibel dengan berbagai skema discovery Antigravity CLI maupun Core.
 
 ---
@@ -168,9 +168,9 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 - **Source**: Developer request
 - **Context**: Utilitas CLI switcher akun ganda `swagy.sh` yang memanipulasi token OAuth dan macOS Keychain tidak diperbolehkan dalam kebijakan keamanan dan operasional lingkungan kerja.
 - **Decision**: 
-  1. Menghapus script [`antigravity-cli/swagy.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/swagy.sh) secara permanen dari repositori.
+  1. Menghapus script [`antigravity-cli/swagy.sh`](../antigravity-cli/swagy.sh) secara permanen dari repositori.
   2. Menghapus symlink dan binary terkait (`swagy`, `agy-switch`, `agy-switch-account`) dari `~/.local/bin/` dan `~/.gemini/antigravity-cli/bin/`.
-  3. Memperbarui [`install.sh`](file:///Users/i/work/KAnggara75/.gemini/install.sh) agar tidak lagi memproses maupun menautkan `swagy.sh`.
+  3. Memperbarui [`install.sh`](../install.sh) agar tidak lagi memproses maupun menautkan `swagy.sh`.
   4. Memperbarui seluruh dokumentasi arsitektur dan peta codebase untuk mencerminkan penghapusan fitur ini.
 - **Consequences**: Tidak ada lagi bypass atau manipulasi token Keychain ganda di level CLI lokal. Manajemen akun Antigravity sepenuhnya mengikuti flow login resmi bawaan client.
 
@@ -181,11 +181,11 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 - **Status**: Accepted
 - **Date**: 2026-10-15
 - **Source**: Developer request
-- **Context**: Sebelumnya, panduan dan aturan review Java (NPE guardrails, thread safety, reactive streaming, memory leaks) tercampur di bagian bawah runbook [`skills/ka-pr/SKILL.md`](file:///Users/i/work/KAnggara75/.gemini/skills/ka-pr/SKILL.md). Hal ini membuat fokus skill pembuatan PR menjadi bias antara otomatisasi API Bitbucket Server dengan tugas pemeriksaan/review kualitas kode.
+- **Context**: Sebelumnya, panduan dan aturan review Java (NPE guardrails, thread safety, reactive streaming, memory leaks) tercampur di bagian bawah runbook [`skills/ka-pr/SKILL.md`](../skills/ka-pr/SKILL.md). Hal ini membuat fokus skill pembuatan PR menjadi bias antara otomatisasi API Bitbucket Server dengan tugas pemeriksaan/review kualitas kode.
 - **Decision**: 
   1. Memisahkan tanggung jawab secara tegas (*Single Responsibility Principle*).
-  2. Mengembalikan [`skills/ka-pr/SKILL.md`](file:///Users/i/work/KAnggara75/.gemini/skills/ka-pr/SKILL.md) murni untuk alur kerja pembuatan Pull Request ke Bitbucket Server On-Premise.
-  3. Membuat skill baru terdedikasi [`skills/ka-review/SKILL.md`](file:///Users/i/work/KAnggara75/.gemini/skills/ka-review/SKILL.md) (`ka-review`) khusus sebagai Code Reviewer dan PR Quality Gatekeeper (Java Quarkus/Spring Boot/Kafka dan Go), mencakup NPE prevention, memory leak/OOM elimination, concurrency safety, DRY, dan format laporan review terstruktur dengan actionable diffs.
+  2. Mengembalikan [`skills/ka-pr/SKILL.md`](../skills/ka-pr/SKILL.md) murni untuk alur kerja pembuatan Pull Request ke Bitbucket Server On-Premise.
+  3. Membuat skill baru terdedikasi [`skills/ka-review/SKILL.md`](../skills/ka-review/SKILL.md) (`ka-review`) khusus sebagai Code Reviewer dan PR Quality Gatekeeper (Java Quarkus/Spring Boot/Kafka dan Go), mencakup NPE prevention, memory leak/OOM elimination, concurrency safety, DRY, dan format laporan review terstruktur dengan actionable diffs.
 - **Consequences**: Alur kerja pembuatan PR menjadi bersih dan terfokus pada otentikasi serta REST API Bitbucket. Skill `ka-review` dapat dipanggil secara mandiri kapan saja untuk mereview diff, branch, maupun commit sebelum atau sesudah PR dibuat.
 
 

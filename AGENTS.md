@@ -6,13 +6,13 @@ Selamat datang di repositori `.gemini`. File ini adalah panduan utama bagi AI pa
 
 ## 1. Quick Navigation & Project Memory (`.context/`)
 
-Baseline memory proyek, arsitektur, dan keputusan teknis tersimpan rapi di dalam direktori [`.context/`](file:///Users/i/work/KAnggara75/.gemini/.context/):
+Baseline memory proyek, arsitektur, dan keputusan teknis tersimpan rapi di dalam direktori `.context/`:
 
-- [`.context/PROJECT_CONTEXT.md`](file:///Users/i/work/KAnggara75/.gemini/.context/PROJECT_CONTEXT.md) — Gambaran umum tujuan sistem, batasan domain, aktor utama, dan environment runtime.
-- [`.context/ARCHITECTURE.md`](file:///Users/i/work/KAnggara75/.gemini/.context/ARCHITECTURE.md) — Diagram arsitektur komponen, alur request/data flow, model konkurensi, dan mitigasi file write.
-- [`.context/CODEBASE_MAP.md`](file:///Users/i/work/KAnggara75/.gemini/.context/CODEBASE_MAP.md) — Peta modul, responsibilitas per direktori, ketergantungan internal/eksternal, dan konsumen.
-- [`.context/DECISIONS.md`](file:///Users/i/work/KAnggara75/.gemini/.context/DECISIONS.md) — Architecture Decision Records (ADR) historis (*append-only*).
-- [`.context/TODO.md`](file:///Users/i/work/KAnggara75/.gemini/.context/TODO.md) — Daftar technical debt, pekerjaan tertunda, dan catatan perbaikan.
+- [`.context/PROJECT_CONTEXT.md`](.context/PROJECT_CONTEXT.md) — Gambaran umum tujuan sistem, batasan domain, aktor utama, dan environment runtime.
+- [`.context/ARCHITECTURE.md`](.context/ARCHITECTURE.md) — Diagram arsitektur komponen, alur request/data flow, model konkurensi, dan mitigasi file write.
+- [`.context/CODEBASE_MAP.md`](.context/CODEBASE_MAP.md) — Peta modul, responsibilitas per direktori, ketergantungan internal/eksternal, dan konsumen.
+- [`.context/DECISIONS.md`](.context/DECISIONS.md) — Architecture Decision Records (ADR) historis (*append-only*).
+- [`.context/TODO.md`](.context/TODO.md) — Daftar technical debt, pekerjaan tertunda, dan catatan perbaikan.
 
 ---
 

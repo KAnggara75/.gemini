@@ -13,3 +13,4 @@ skills/*
 !skills/ka-*/
 !skills/ka-*/**
 __pycache__/
+.obsidian/

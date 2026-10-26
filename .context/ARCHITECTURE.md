@@ -152,10 +152,10 @@ sequenceDiagram
 ## 4. Error Handling & Fault Tolerance
 - **Pipe Fail Safety**: Semua shell script menggunakan `set -euo pipefail` atau `set -eo pipefail` dengan fallback pengaman `|| true` pada operasi opsional dan parsing string.
 - **Safe JSON Fallbacks**: Parsing via `jq` selalu menyertakan fallback default `// empty` atau `// false` untuk mencegah error saat struktur metadata berubah.
-- **Safe Cleaners**: Utilitas pembersihan percakapan ([`clean-conversations.sh`](file:///Users/i/work/KAnggara75/.gemini/skills/ka-del-conversation/clean-conversations.sh)) menyediakan mode dry-run (`-n`), filter umur (`-o DAYS`), dan seleksi berbasis target per-surface (`--cli`, `--ide`, `--core`).
+- **Safe Cleaners**: Utilitas pembersihan percakapan ([`clean-conversations.sh`](../skills/ka-del-conversation/clean-conversations.sh)) menyediakan mode dry-run (`-n`), filter umur (`-o DAYS`), dan seleksi berbasis target per-surface (`--cli`, `--ide`, `--core`).
 
 ---
 
 ## 5. Telemetry & Observability
 - **Tmux State Sharing**: Status agent disimpan dalam format JSON di `/tmp/tmux_agent_state_global.json` dan `/tmp/tmux_agent_state_<pane_id>.json`, memungkinkan statusline tmux dan script eksternal mengakses status agent secara real-time.
-- **Terminal Title Dynamic Sync**: Script [`antigravity-cli/title.sh`](file:///Users/i/work/KAnggara75/.gemini/antigravity-cli/title.sh) secara otomatis memformat status agent (emoji + status + nama project) pada tab terminal / jendela tmux.
+- **Terminal Title Dynamic Sync**: Script [`antigravity-cli/title.sh`](../antigravity-cli/title.sh) secara otomatis memformat status agent (emoji + status + nama project) pada tab terminal / jendela tmux.

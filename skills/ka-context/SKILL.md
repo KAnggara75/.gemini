@@ -34,7 +34,10 @@ You act as a **Staff Software Architect** tasked with building grounded, token-e
   - `UNKNOWN`: No evidence found in repository (inquire with developer if crucial).
 - **Anti-Hallucination**: Never assume architecture patterns solely based on directory names (e.g., having `controllers/` does not guarantee pure MVC).
 - **Token Efficiency First**: Use `rtk` when available (`rtk git ...`), prefer shallow depth-limited scans, and avoid dumping raw files unconditionally.
-- **Relative Workspace Links**: Always format file and markdown document links relative to the repository root using `file:///.context/...` or `file:///path/to/file` (e.g. `[PROJECT_CONTEXT.md](file:///.context/PROJECT_CONTEXT.md)` or `[file.ext](file:///src/file.ext)`), **NEVER** use machine-specific absolute user paths like `file:///Users/...` or `file:///home/...`. This ensures documents remain portable and clickable across different developers, machines, and workspaces.
+- **Obsidian & Portable Link Compatibility**:
+  - Format file links using relative Markdown file paths (e.g. `[.context/PROJECT_CONTEXT.md](.context/PROJECT_CONTEXT.md)` or `[PROJECT_CONTEXT.md](.context/PROJECT_CONTEXT.md)`, `[src/main.go](src/main.go)`).
+  - **Do NOT link directly to folders without a file** (e.g. avoid `[folder/](folder/)` or `[.context/](.context/)`). In Obsidian, clicking a markdown link pointing directly to a directory path causes Obsidian to try to create a note named after that directory, failing with a **"Folder already exists"** error. Always refer to directories as plain inline code text (e.g. `direktori \`.context/\``) or link to a specific note within it.
+  - **NEVER** use machine-specific absolute user paths like `file:///Users/...` or `file:///home/...`, and avoid root-absolute `file:///.context/...` which breaks in Obsidian.
 - **Non-Destructive**: Do not alter application code. Only designated documentation files in `.context/` and `AGENTS.md` at the repository root may be created or updated.
 
 ---
@@ -244,10 +247,10 @@ _Long-term architectural and refactoring initiatives._
 1. **Verify / Update `AGENTS.md` at Repository Root**:
    - Ensure root `AGENTS.md` exists and contains:
      - Workspace guidelines & identity.
-     - Reference links pointing to `.context/` documents using relative root format: `file:///.context/CODEBASE_MAP.md`, `file:///.context/ARCHITECTURE.md`, `file:///.context/PROJECT_CONTEXT.md`, `file:///.context/DECISIONS.md`, `file:///.context/TODO.md` (never machine-specific home paths).
+     - Reference links pointing to `.context/` documents using relative paths compatible with Obsidian and standard markdown: `[.context/CODEBASE_MAP.md](.context/CODEBASE_MAP.md)`, `[.context/ARCHITECTURE.md](.context/ARCHITECTURE.md)`, `[.context/PROJECT_CONTEXT.md](.context/PROJECT_CONTEXT.md)`, `[.context/DECISIONS.md](.context/DECISIONS.md)`, `[.context/TODO.md](.context/TODO.md)`.
      - Available local skills/tools and delivery standards.
 2. **Cleanliness Verification**:
    - Ensure no obsolete duplicate context files remain lingering at the root level (`CODEBASE_MAP.md`, `ARCHITECTURE.md`, `PROJECT_CONTEXT.md`, `DECISIONS.md`, `TODO.md` should solely live inside `.context/`).
 3. **Factual Consistency**: Verify zero conflicting statements across all documents.
-4. **No Unverified Claims**: Ensure every architectural claim points to valid file paths using relative `file:///` URIs.
+4. **No Unverified Claims**: Ensure every architectural claim points to valid file paths using relative paths compatible with Obsidian and Git/IDE previews.
 5. **Present Executive Summary**: Report the baseline memory summary and migration results to the developer.

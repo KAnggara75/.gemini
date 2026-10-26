@@ -6,7 +6,7 @@ Dokumen ini menginventarisasi technical debt, peluang peningkatan arsitektur, da
 
 ## 1. Immediate Tasks
 _Peningkatan atau perbaikan yang relevan dengan stabilitas dan konsistensi sistem saat ini._
-- [ ] [`install.sh`](file:///Users/i/work/KAnggara75/.gemini/install.sh): Uji perilaku instalasi pada mesin baru jika direktori `~/.gemini/` belum ada sama sekali untuk memastikan pembuatan parent direktori berjalan mulus.
+- [ ] [`install.sh`](../install.sh): Uji perilaku instalasi pada mesin baru jika direktori `~/.gemini/` belum ada sama sekali untuk memastikan pembuatan parent direktori berjalan mulus.
 
 ---
 

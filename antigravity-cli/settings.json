@@ -216,7 +216,9 @@
     "/Users/i/work/KAnggara75/IDXStock",
     "/Users/i/dotprivate",
     "/Users/i/work/kubeconfig",
-    "/Users/i/work/reviewer"
+    "/Users/i/work/reviewer",
+    "/Users/i/work/KAnggara75/Dataset-Saham-IDX",
+    "/Users/i/work/timesheet/timesheet/2026-08"
   ],
   "useG1Credits": true,
   "verbosity": "low"
