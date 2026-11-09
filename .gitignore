@@ -13,4 +13,14 @@ skills/*
 !skills/ka-*/
 !skills/ka-*/**
 __pycache__/
-.obsidian/
+
+# Obsidian: track configs and plugins, ignore local workspace tabs/layout state
+.obsidian/*
+!.obsidian/app.json
+!.obsidian/appearance.json
+!.obsidian/core-plugins.json
+!.obsidian/community-plugins.json
+!.obsidian/graph.json
+!.obsidian/plugins/
+!.obsidian/plugins/**
+.obsidian/workspace*.json
