@@ -106,7 +106,20 @@ for bin_dir in "${HOME}/.local/bin" "${TARGET_DIR}/antigravity-cli/bin"; do
 done
 
 echo
-echo "[6/6] Setting up git skip-worktree..."
+echo "[6/7] Linking RTK configurations..."
+RTK_TARGET_DIR="${HOME}/Library/Application Support/rtk"
+if [ -d "${REPO_DIR}/rtk" ]; then
+  mkdir -p "${RTK_TARGET_DIR}"
+  for rtk_file in "${REPO_DIR}/rtk"/*; do
+    if [ -f "${rtk_file}" ]; then
+      rtk_file_name="$(basename "${rtk_file}")"
+      link_file "${rtk_file}" "${RTK_TARGET_DIR}/${rtk_file_name}"
+    fi
+  done
+fi
+
+echo
+echo "[7/7] Setting up git skip-worktree..."
 
 # Protect against accidental local leaks
 if git -C "${REPO_DIR}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
