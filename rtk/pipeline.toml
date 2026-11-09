@@ -5,7 +5,7 @@ extends = "rtk:delegate-reads"
 
 [upstream.flash]
 provider    = "google"
-model       = "gemini-3.8-flash"
+model       = "gemini-3.5-flash-lite"
 api_key_env = "GEMINI_API_KEY_RTK"
 
 [task.bulk-read]

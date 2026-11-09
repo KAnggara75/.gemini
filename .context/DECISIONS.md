@@ -188,5 +188,19 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
   3. Membuat skill baru terdedikasi [`skills/ka-review/SKILL.md`](../skills/ka-review/SKILL.md) (`ka-review`) khusus sebagai Code Reviewer dan PR Quality Gatekeeper (Java Quarkus/Spring Boot/Kafka dan Go), mencakup NPE prevention, memory leak/OOM elimination, concurrency safety, DRY, dan format laporan review terstruktur dengan actionable diffs.
 - **Consequences**: Alur kerja pembuatan PR menjadi bersih dan terfokus pada otentikasi serta REST API Bitbucket. Skill `ka-review` dapat dipanggil secara mandiri kapan saja untuk mereview diff, branch, maupun commit sebelum atau sesudah PR dibuat.
 
+---
+
+## ADR-017: Sentralisasi Konfigurasi RTK dan Integrasi Delegasi AI (gemini-3.5-flash-lite)
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Source**: Developer request & RTK integration
+- **Context**: File konfigurasi RTK (`config.toml`, `filters.toml`, `pipeline.toml`) sebelumnya berada di direktori sistem lokal `~/Library/Application Support/rtk`, sehingga tidak terlacak oleh version control dotfiles dan berisiko hilang saat setup mesin baru. Selain itu, fitur delegasi task AI (`bulk-read`) membutuhkan model yang ultra-cepat dan tidak mengalami network timeout.
+- **Decision**: 
+  1. Membuat direktori baru [`rtk/`](../rtk/) di dalam repository yang menyimpan `config.toml`, `filters.toml`, dan `pipeline.toml`.
+  2. Menambahkan langkah otomatisasi `[6/7]` pada [`install.sh`](../install.sh) untuk menautkan (symlink) konfigurasi dari repository ke `~/Library/Application Support/rtk/`.
+  3. Mengonfigurasi `pipeline.toml` menggunakan model upstream `gemini-3.5-flash-lite` dengan autentikasi berbasis environment variable `GEMINI_API_KEY_RTK` untuk keamanan kredensial dan respon sub-detik (~700ms).
+- **Consequences**: Seluruh konfigurasi RTK kini terdokumentasi dan ter-versioning secara terpusat di git, aman dari kebocoran API key, dan memiliki latensi delegasi AI yang cepat dan stabil.
+
 
 

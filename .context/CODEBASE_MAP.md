@@ -48,6 +48,17 @@
 
 ---
 
+## `rtk/`
+- **Responsibility**: Konfigurasi terpusat untuk Rust Token Killer (RTK) CLI proxy, filter peringkasan terminal, dan task delegasi model sekunder.
+- **Entry / Key Files**:
+  - [`rtk/config.toml`](../rtk/config.toml) — Pengaturan pelacakan, telemetry, output display, dan batasan grep/status.
+  - [`rtk/filters.toml`](../rtk/filters.toml) — Rule filter kustom global untuk perintah terminal.
+  - [`rtk/pipeline.toml`](../rtk/pipeline.toml) — Definisi pipeline delegasi AI (`rtk:delegate-reads`) dan binding upstream model (`gemini-3.5-flash-lite` via `GEMINI_API_KEY_RTK`).
+- **Dependencies**: Binary `rtk`, Google Generative AI API (`gemini-3.5-flash-lite`).
+- **Consumers**: Terminal developer, shell hooks (`rtk-hook-gemini.sh`), delegasi CLI (`rtk bulk-read`, `rtk code-write`).
+
+---
+
 ## `skills/`
 - **Responsibility**: Koleksi modul prosedur operasional terstandarisasi (*agent runbooks*).
 - **Sub-Modul**:
