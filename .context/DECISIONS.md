@@ -202,5 +202,18 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
   3. Mengonfigurasi `pipeline.toml` menggunakan model upstream `gemini-3.5-flash-lite` dengan autentikasi berbasis environment variable `GEMINI_API_KEY_RTK` untuk keamanan kredensial dan respon sub-detik (~700ms).
 - **Consequences**: Seluruh konfigurasi RTK kini terdokumentasi dan ter-versioning secara terpusat di git, aman dari kebocoran API key, dan memiliki latensi delegasi AI yang cepat dan stabil.
 
+---
+
+## ADR-018: Pelacakan Parsial Konfigurasi Obsidian Vault dan Eksklusi Workspace State
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Source**: Developer request & Obsidian setup
+- **Context**: File-file konfigurasi Obsidian di `.obsidian/` (seperti visualisasi graph, tema, dan plugin indexing hidden folders) dibutuhkan agar tampilan catatan arsitektur konsisten di seluruh mesin. Namun, file `workspace*.json` selalu berubah setiap kali membuka tab/file sehingga berpotensi mengotori riwayat git commit.
+- **Decision**: 
+  1. Mengubah aturan [`.gitignore`](../.gitignore) untuk melacak konfigurasi global Obsidian (`app.json`, `appearance.json`, `graph.json`, `community-plugins.json`, dan plugin `hidden-folders-access`).
+  2. Mengecualikan secara ketat berkas status lokal `workspace*.json` dari pelacakan git.
+- **Consequences**: Setup visualisasi graph Obsidian otomatis terpasang saat repository di-clone tanpa menimbulkan konflik git diff akibat perpindahan kursor atau tab pengguna.
+
 
 

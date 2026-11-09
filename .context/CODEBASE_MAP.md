@@ -48,6 +48,17 @@
 
 ---
 
+## `.obsidian/`
+- **Responsibility**: Konfigurasi workspace dan vault viewer Obsidian untuk eksplorasi dokumentasi arsitektur dan relasi dokumen.
+- **Entry / Key Files**:
+  - [`.obsidian/graph.json`](../.obsidian/graph.json) — Konfigurasi warna, gaya node, dan filtering Obsidian Graph View (path `.context`, `config`, `skills`).
+  - [`.obsidian/community-plugins.json`](../.obsidian/community-plugins.json) — Daftar plugin komunitas aktif (`hidden-folders-access`).
+  - [`.obsidian/plugins/hidden-folders-access/data.json`](../.obsidian/plugins/hidden-folders-access/data.json) — Whitelist folder `.context` agar terbaca dan diindeks oleh Obsidian Graph View.
+- **Dependencies**: Aplikasi Obsidian Desktop.
+- **Consumers**: Developer note/graph exploration.
+
+---
+
 ## `rtk/`
 - **Responsibility**: Konfigurasi terpusat untuk Rust Token Killer (RTK) CLI proxy, filter peringkasan terminal, dan task delegasi model sekunder.
 - **Entry / Key Files**:
