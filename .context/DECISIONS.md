@@ -251,3 +251,17 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 
 
 
+
+---
+
+## ADR-021: Penyederhanaan Indikator Penggunaan Konteks pada Statusline CLI
+
+- **Status**: Accepted
+- **Date**: 2026-11-13
+- **Source**: Developer request
+- **Context**: Statusline sebelumnya menampilkan graphical progress bar 10 segmen karakter unicode (`ctx █▒········ 16.2%`). Meskipun visual, komponen graphical bar ini memakan lebar horizontal terminal dan menimbulkan noise visual yang tidak esensial ketika developer hanya membutuhkan angka persentase utilisasi context window yang tepat.
+- **Decision**: 
+  1. Menghapus komputasi perulangan segmen graphical bar unicode (`█`, `▓`, `▒`, `░`, `·`) pada [`antigravity-cli/statusline.sh`](../antigravity-cli/statusline.sh).
+  2. Mengganti format tampilan menjadi teks minimalis `ctx: <PCT>%` (contoh: `ctx: 16.2% (32.4k/200.0k)`).
+  3. Mempertahankan pewarnaan dinamis berbasis ambang batas persentase (hijau `< 60%`, kuning `60-84%`, merah `≥ 85%`) langsung pada teks angka persentase.
+- **Consequences**: Statusline menjadi lebih ramping, menghemat ruang horizontal terminal, mengurangi overhead pemrosesan string perulangan bash, dan tetap mempertahankan sinyal peringatan visual lewat warna angka.

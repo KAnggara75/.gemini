@@ -344,37 +344,14 @@ else
   SB="${FG_GRAY}🛡️ off${R}"
 fi
 
-# ─── Context Bar (10 segments) ───────────────────────────────────────────────
-BAR_LEN=10
-FILLED=$((PCT_INT * BAR_LEN / 100))
-REMAINDER=$(( (PCT_INT * BAR_LEN) % 100 ))
-
+# ─── Context Usage ───────────────────────────────────────────────────────────
 if [ "$PCT_INT" -ge 85 ]; then
-  BAR_COLOR="$FG_BRIGHT_RED"
+  PCT_COLOR="$FG_BRIGHT_RED"
 elif [ "$PCT_INT" -ge 60 ]; then
-  BAR_COLOR="$FG_BRIGHT_YELLOW"
+  PCT_COLOR="$FG_BRIGHT_YELLOW"
 else
-  BAR_COLOR="$FG_BRIGHT_GREEN"
+  PCT_COLOR="$FG_BRIGHT_GREEN"
 fi
-
-BAR=""
-for ((i = 0; i < BAR_LEN; i++)); do
-  if [ "$i" -lt "$FILLED" ]; then
-    BAR="${BAR}█"
-  elif [ "$i" -eq "$FILLED" ]; then
-    if [ "$REMAINDER" -ge 75 ]; then
-      BAR="${BAR}▓"
-    elif [ "$REMAINDER" -ge 50 ]; then
-      BAR="${BAR}▒"
-    elif [ "$REMAINDER" -ge 25 ]; then
-      BAR="${BAR}░"
-    else
-      BAR="${BAR}·"
-    fi
-  else
-    BAR="${BAR}·"
-  fi
-done
 
 # Token count string (jika tersedia di payload)
 TOKEN_INFO=""
@@ -384,7 +361,7 @@ if [ "$TOTAL_TOKENS" -gt 0 ] 2>/dev/null; then
   TOKEN_INFO=" ${FG_GRAY}(${USED_STR}/${TOTAL_STR})${R}"
 fi
 
-CTX="${FG_GRAY}ctx ${BAR_COLOR}${BAR} ${NUM_COLOR}${PCT_FMT}%${R}${TOKEN_INFO}"
+CTX="${FG_GRAY}ctx: ${PCT_COLOR}${PCT_FMT}%${R}${TOKEN_INFO}"
 
 # ─── Dynamic Highlight Stats ─────────────────────────────────────────────────
 # Memberi highlight hanya ketika count > 0 agar fokus ke aktivitas penting
