@@ -217,17 +217,37 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
 
 ---
 
-## ADR-019: Integrasi Badge Agent Mode pada Statusline Antigravity CLI
+## ADR-019: Integrasi Badge Agent Mode dan Pembersihan Output Turn Token pada Statusline Antigravity CLI
 
 - **Status**: Accepted
 - **Date**: 2026-11-13
 - **Source**: Developer request
-- **Context**: Statusline terminal sebelumnya hanya menampilkan status kerja dasar (`● READY`, `⚙ WORKING`, `◆ THINKING`, `🔧 TOOL`) tanpa indikator mode interaksi agent yang sedang aktif (`agentMode` / `cycle_mode`), sehingga menyulitkan developer mengetahui apakah agent berada dalam mode `accept-edits`, `bypass-review`, atau `read-only` langsung dari statusline.
+- **Context**: Statusline terminal sebelumnya hanya menampilkan status kerja dasar (`● READY`, `⚙ WORKING`, `◆ THINKING`, `🔧 TOOL`) tanpa indikator mode interaksi agent yang sedang aktif (`agentMode` / `cycle_mode`). Selain itu, metrik turn delta token (`turn ↓... ↑...`) di baris kedua dianggap menambah clutter visual.
 - **Decision**: 
   1. Memodifikasi [`antigravity-cli/statusline.sh`](../antigravity-cli/statusline.sh) untuk membaca field `.agent_mode // .cycle_mode // .mode` dari payload JSON stdin.
   2. Menambahkan fallback pembacaan nilai `"agentMode"` langsung dari `~/.gemini/antigravity-cli/settings.json` jika payload runtime tidak menyertakan key tersebut.
   3. Memformat mode menjadi badge ringkas bersiku di samping indikator status: `[accept]`, `[bypass]`, `[auto]`, `[read]`.
-- **Consequences**: Developer dapat langsung mengetahui mode persetujuan agent sekilas pandang dari statusline tanpa perlu membuka atau memeriksa file konfigurasi secara manual.
+  4. Menghapus tampilan metrik per-turn token delta (`turn ↓... ↑...`) pada baris kedua statusline untuk menjaga estetika ringkas.
+- **Consequences**: Developer dapat langsung mengetahui mode persetujuan agent sekilas pandang dari statusline tanpa perlu membuka file konfigurasi, dengan tampilan statusline yang lebih bersih.
+
+---
+
+## ADR-020: Standarisasi Singkatan Model Display Name pada Statusline CLI
+
+- **Status**: Accepted
+- **Date**: 2026-11-13
+- **Source**: Developer request
+- **Context**: Display name model AI dari CLI runtime payload berukuran panjang dan menyertakan level effort thinking (contoh: `"Gemini 3.8 Flash (Low)"`, `"Claude Sonnet 4.6 (Thinking)"`, `"Gemini 4 Carbon (Low)"`, `"GPT-OSS 120B (Medium)"`). Teks panjang ini memakan ruang horizontal statusline pada terminal berukuran kecil atau saat split-pane aktif.
+- **Decision**: 
+  1. Mengimplementasikan parsing regex bertingkat pada [`antigravity-cli/statusline.sh`](../antigravity-cli/statusline.sh) untuk menyingkat display name model:
+     - **Gemini 3.x / Flash / Pro**: Format `G<ver><tier_initial>-<effort>` (contoh: `Gemini 3.8 Flash (Low)` $\rightarrow$ `G3.8F-L`).
+     - **Gemini 4 Codename**: Format `G4<codename_initial>-<effort>` (contoh: `Gemini 4 Carbon (Low)` $\rightarrow$ `G4C-L`, `Gemini 4 Argon (High)` $\rightarrow$ `G4A-H`, `Gemini 4 Hydrogen (None)` $\rightarrow$ `G4H-N`).
+     - **Claude Tier-First**: Format `<Tier> <ver>` tanpa effort thinking (contoh: `Claude Sonnet 4.6 (Thinking)` $\rightarrow$ `Sonet 4.6`, `Claude Opus 4.6 (Thinking)` $\rightarrow$ `Opus 4.6`).
+     - **Claude Ver-First**: Format `C<ver>-<tier>-<effort>` (contoh: `Claude 3.5 Sonnet` $\rightarrow$ `C3.5-Sonnet`).
+     - **GPT-OSS**: Format `GPT <size>` (contoh: `GPT-OSS 120B (Medium)` $\rightarrow$ `GPT 120B`).
+  2. Menghapus suffix `(Thinking)` secara otomatis dari display name model.
+- **Consequences**: Nama model pada statusline terminal menjadi ringkas, konsisten, mudah dibaca sekilas pada lebar terminal terbatas, dan tidak memotong badge quota 5 jam.
+
 
 
 

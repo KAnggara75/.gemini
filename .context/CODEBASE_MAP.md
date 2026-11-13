@@ -16,7 +16,7 @@
 - **Responsibility**: Pengaturan khusus terminal CLI, pemantau statusline tmux, dan updater judul jendela.
 - **Entry / Key Files**:
   - [`antigravity-cli/settings.json`](../antigravity-cli/settings.json) — Whitelist perizinan tool/command (`permissions.allow`), trusted workspaces, model AI, dan path command runner.
-  - [`antigravity-cli/statusline.sh`](../antigravity-cli/statusline.sh) — Script statusline responsif (single line/multi-line); memonitor status state & badge agent mode (`[accept]`/`[bypass]`/`[auto]`), token usage, persentase 5-hour quota & waktu reset lokal (`🕒HH:MM`), git branch, task/subagent count, self-healing symlink, dan notifikasi audio prompt.
+  - [`antigravity-cli/statusline.sh`](../antigravity-cli/statusline.sh) — Script statusline responsif (single line/multi-line); memonitor status state & badge agent mode (`[accept]`/`[bypass]`/`[auto]`), model name shortener (`G3.8F-L`, `G4C-L`, `Sonet 4.6`, `GPT 120B`), token usage, persentase 5-hour quota & waktu reset lokal (`🕒HH:MM`), git branch, task/subagent count, self-healing symlink, dan notifikasi audio prompt.
   - [`antigravity-cli/title.sh`](../antigravity-cli/title.sh) — Script formatting judul jendela terminal / tmux pane berbasis agent state dan nama workspace.
 - **Dependencies**: `jq`, `afplay` (macOS), `osascript`, `bc`, `sqlite3`, `tmux`.
 - **Consumers**: Developer terminal environment.

@@ -2,7 +2,7 @@
   "agentMode": "accept-edits",
   "allowNonWorkspaceAccess": true,
   "artifactReviewPolicy": "always-proceed",
-  "model": "Claude Sonnet 4.6 (Thinking)",
+  "model": "Gemini 3.8 Flash (Low)",
   "notifications": true,
   "permissions": {
     "allow": [
