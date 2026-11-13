@@ -215,5 +215,19 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
   2. Mengecualikan secara ketat berkas status lokal `workspace*.json` dari pelacakan git.
 - **Consequences**: Setup visualisasi graph Obsidian otomatis terpasang saat repository di-clone tanpa menimbulkan konflik git diff akibat perpindahan kursor atau tab pengguna.
 
+---
+
+## ADR-019: Integrasi Badge Agent Mode pada Statusline Antigravity CLI
+
+- **Status**: Accepted
+- **Date**: 2026-11-13
+- **Source**: Developer request
+- **Context**: Statusline terminal sebelumnya hanya menampilkan status kerja dasar (`● READY`, `⚙ WORKING`, `◆ THINKING`, `🔧 TOOL`) tanpa indikator mode interaksi agent yang sedang aktif (`agentMode` / `cycle_mode`), sehingga menyulitkan developer mengetahui apakah agent berada dalam mode `accept-edits`, `bypass-review`, atau `read-only` langsung dari statusline.
+- **Decision**: 
+  1. Memodifikasi [`antigravity-cli/statusline.sh`](../antigravity-cli/statusline.sh) untuk membaca field `.agent_mode // .cycle_mode // .mode` dari payload JSON stdin.
+  2. Menambahkan fallback pembacaan nilai `"agentMode"` langsung dari `~/.gemini/antigravity-cli/settings.json` jika payload runtime tidak menyertakan key tersebut.
+  3. Memformat mode menjadi badge ringkas bersiku di samping indikator status: `[accept]`, `[bypass]`, `[auto]`, `[read]`.
+- **Consequences**: Developer dapat langsung mengetahui mode persetujuan agent sekilas pandang dari statusline tanpa perlu membuka atau memeriksa file konfigurasi secara manual.
+
 
 

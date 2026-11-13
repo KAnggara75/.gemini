@@ -76,6 +76,7 @@ format_tokens() {
   read -r QUOTA_RESET_SEC || true
   read -r TURN_IN || true
   read -r TURN_OUT || true
+  read -r AGENT_MODE || true
 } <<< "$(
   echo "$INPUT_JSON" | jq -r '
     (.agent_state // "idle"),
@@ -108,8 +109,9 @@ format_tokens() {
       if sec != null then sec else "" end
     ),
     (.context_window.current_usage.input_tokens // 0),
-    (.context_window.current_usage.output_tokens // 0)
-  ' 2>/dev/null || printf "idle\n0\n0\n0\n\nfalse\nfalse\n0\n0\n0\n\n\n\n\n80\n\n\n\n\n0\n0\n"
+    (.context_window.current_usage.output_tokens // 0),
+    (.agent_mode // .cycle_mode // .mode // "")
+  ' 2>/dev/null || printf "idle\n0\n0\n0\n\nfalse\nfalse\n0\n0\n0\n\n\n\n\n80\n\n\n\n\n0\n0\n\n"
 )"
 COLS="${COLS:-80}"
 [[ "$COLS" =~ ^[0-9]+$ ]] || COLS=80
@@ -154,14 +156,34 @@ fi
 PCT_FMT=$(LC_NUMERIC=C printf "%.1f" "$USED_PCT")
 PCT_INT=${USED_PCT%.*}; PCT_INT=${PCT_INT:-0}
 
-# ─── State Indicator ─────────────────────────────────────────────────────────
+# ─── Fallback Agent Mode from settings.json ──────────────────────────────────
+if [ -z "$AGENT_MODE" ] || [ "$AGENT_MODE" = "null" ]; then
+  CLI_SETTINGS="${HOME}/.gemini/antigravity-cli/settings.json"
+  if [ -f "$CLI_SETTINGS" ]; then
+    AGENT_MODE=$(jq -r '.agentMode // ""' "$CLI_SETTINGS" 2>/dev/null || true)
+  fi
+fi
+
+# ─── State Indicator & Agent Mode ────────────────────────────────────────────
+MODE_BADGE=""
+if [ -n "$AGENT_MODE" ] && [ "$AGENT_MODE" != "null" ]; then
+  case "$AGENT_MODE" in
+    accept-edits) MODE_DISP="accept" ;;
+    bypass-review) MODE_DISP="bypass" ;;
+    auto-edit|auto_edit) MODE_DISP="auto" ;;
+    read-only|readonly) MODE_DISP="read" ;;
+    *) MODE_DISP="$AGENT_MODE" ;;
+  esac
+  MODE_BADGE=" ${FG_GRAY}[${FG_BRIGHT_CYAN}${MODE_DISP}${FG_GRAY}]${R}"
+fi
+
 case "$STATE" in
-  idle)     S="${FG_BRIGHT_GREEN}${B}● READY${R}" ;;
-  thinking) S="${FG_BRIGHT_YELLOW}${B}◆ THINKING${R}" ;;
-  working)  S="${FG_BRIGHT_CYAN}${B}⚙ WORKING${R}" ;;
-  tool_use) S="${FG_BRIGHT_MAGENTA}${B}🔧 TOOL${R}" ;;
-  error)    S="${FG_BRIGHT_RED}${B}✖ ERROR${R}" ;;
-  *)        S="${FG_WHITE}${B}⏳ $(echo "$STATE" | tr '[:lower:]' '[:upper:]')${R}" ;;
+  idle)     S="${FG_BRIGHT_GREEN}${B}● READY${R}${MODE_BADGE}" ;;
+  thinking) S="${FG_BRIGHT_YELLOW}${B}◆ THINKING${R}${MODE_BADGE}" ;;
+  working)  S="${FG_BRIGHT_CYAN}${B}⚙ WORKING${R}${MODE_BADGE}" ;;
+  tool_use) S="${FG_BRIGHT_MAGENTA}${B}🔧 TOOL${R}${MODE_BADGE}" ;;
+  error)    S="${FG_BRIGHT_RED}${B}✖ ERROR${R}${MODE_BADGE}" ;;
+  *)        S="${FG_WHITE}${B}⏳ $(echo "$STATE" | tr '[:lower:]' '[:upper:]')${R}${MODE_BADGE}" ;;
 esac
 
 # ─── Conversation / Session ──────────────────────────────────────────────────
@@ -234,7 +256,51 @@ fi
 # ─── Model ───────────────────────────────────────────────────────────────────
 M=""
 if [ -n "$MODEL" ]; then
-  M="${FG_GRAY} ╱ ${FG_BRIGHT_MAGENTA}${MODEL}${R}"
+  # Format singkatan model: Gemini 3.8 Flash (Low) -> G3.8F-L
+  eff=""
+  if [[ "$MODEL" =~ \([Ll]ow\) ]]; then eff="-L"
+  elif [[ "$MODEL" =~ \([Mm]edium\) ]]; then eff="-M"
+  elif [[ "$MODEL" =~ \([Hh]igh\) ]]; then eff="-H"
+  elif [[ "$MODEL" =~ \([Nn]one\) ]]; then eff="-N"
+  fi
+
+  base=$(echo "$MODEL" | sed -E "s/[[:space:]]*\((Low|Medium|High|None)\)//I")
+  SHORT_MODEL=""
+
+  # Gemini pattern: Gemini X.Y Flash/Pro/Lite
+  if [[ "$base" =~ ^Gemini[[:space:]]+([0-9\.]+)[[:space:]]*(Flash|Pro|Lite)? ]]; then
+    ver="${BASH_REMATCH[1]}"
+    tier="${BASH_REMATCH[2]:-}"
+    t_char=""
+    if [ -n "$tier" ]; then
+      t_char="${tier:0:1}"
+      t_char=$(echo "$t_char" | tr "[:lower:]" "[:upper:]")
+    fi
+    SHORT_MODEL="G${ver}${t_char}${eff}"
+  # Claude pattern (tier-first): Claude Sonnet/Opus/Haiku X.Y
+  elif [[ "$base" =~ ^Claude[[:space:]]+(Sonnet|Opus|Haiku)[[:space:]]+([0-9\.]+) ]]; then
+    tier="${BASH_REMATCH[1]}"
+    ver="${BASH_REMATCH[2]}"
+    case "$tier" in
+      Sonnet) SHORT_MODEL="Sonet ${ver}" ;;
+      Opus)   SHORT_MODEL="Opus ${ver}" ;;
+      Haiku)  SHORT_MODEL="Haiku ${ver}" ;;
+      *)      SHORT_MODEL="${tier} ${ver}" ;;
+    esac
+  # Claude pattern (ver-first): Claude X.Y Sonnet/Opus/Haiku
+  elif [[ "$base" =~ ^Claude[[:space:]]+([0-9\.]+)[[:space:]]*(Sonnet|Opus|Haiku)? ]]; then
+    ver="${BASH_REMATCH[1]}"
+    tier="${BASH_REMATCH[2]:-}"
+    if [ -n "$tier" ]; then
+      SHORT_MODEL="C${ver}-${tier}${eff}"
+    else
+      SHORT_MODEL="C${ver}${eff}"
+    fi
+  else
+    SHORT_MODEL="${base}${eff}"
+  fi
+
+  M="${FG_GRAY} ╱ ${FG_BRIGHT_MAGENTA}${SHORT_MODEL}${R}"
 fi
 
 # ─── 5h Quota Usage & Reset Clock ───────────────────────────────────────────
@@ -309,17 +375,6 @@ fi
 
 CTX="${FG_GRAY}ctx ${BAR_COLOR}${BAR} ${NUM_COLOR}${PCT_FMT}%${R}${TOKEN_INFO}"
 
-# ─── Current Turn Usage ──────────────────────────────────────────────────────
-TURN_IN_INT=${TURN_IN:-0}
-TURN_OUT_INT=${TURN_OUT:-0}
-if [ "$TURN_IN_INT" -gt 0 ] || [ "$TURN_OUT_INT" -gt 0 ] 2>/dev/null; then
-  TURN_IN_STR=$(format_tokens "$TURN_IN_INT")
-  TURN_OUT_STR=$(format_tokens "$TURN_OUT_INT")
-  TURN_FMT="${FG_GRAY}turn ${FG_CYAN}↓${TURN_IN_STR} ${FG_MAGENTA}↑${TURN_OUT_STR}${R}"
-else
-  TURN_FMT="${FG_GRAY}turn 0${R}"
-fi
-
 # ─── Dynamic Highlight Stats ─────────────────────────────────────────────────
 # Memberi highlight hanya ketika count > 0 agar fokus ke aktivitas penting
 if [ "$ARTIFACTS" -gt 0 ] 2>/dev/null; then
@@ -345,7 +400,7 @@ DOT="${FG_GRAY} · ${R}"
 
 # ─── Output Layout ───────────────────────────────────────────────────────────
 LINE1="${S}${C}${M}${V}${QUOTA_BADGE}"
-LINE2="${CTX}${DOT}${TURN_FMT}${DOT}${ART_FMT}${DOT}${SUB_FMT}${DOT}${BG_FMT}${DOT}${SB}"
+LINE2="${CTX}${DOT}${ART_FMT}${DOT}${SUB_FMT}${DOT}${BG_FMT}${DOT}${SB}"
 
 if [ "$COLS" -ge 120 ]; then
   echo -e "${LINE1}  ${FG_GRAY}│${R}  ${LINE2}"
@@ -354,5 +409,5 @@ elif [ "$COLS" -ge 80 ]; then
   echo -e "${FG_GRAY}╰─${R} ${LINE2}"
 else
   echo -e "${S}${C}${M}${QUOTA_BADGE}"
-  echo -e "${CTX}${DOT}${TURN_FMT}"
+  echo -e "${CTX}"
 fi
