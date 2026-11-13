@@ -256,19 +256,24 @@ fi
 # ─── Model ───────────────────────────────────────────────────────────────────
 M=""
 if [ -n "$MODEL" ]; then
-  # Format singkatan model: Gemini 3.8 Flash (Low) -> G3.8F-L
+  # Format singkatan model
   eff=""
   if [[ "$MODEL" =~ \([Ll]ow\) ]]; then eff="-L"
   elif [[ "$MODEL" =~ \([Mm]edium\) ]]; then eff="-M"
   elif [[ "$MODEL" =~ \([Hh]igh\) ]]; then eff="-H"
   elif [[ "$MODEL" =~ \([Nn]one\) ]]; then eff="-N"
+  elif [[ "$MODEL" =~ \([Tt]hinking\) ]]; then eff=""
   fi
 
-  base=$(echo "$MODEL" | sed -E "s/[[:space:]]*\((Low|Medium|High|None)\)//I")
+  base=$(echo "$MODEL" | sed -E "s/[[:space:]]*\((Low|Medium|High|None|Thinking)\)//I")
   SHORT_MODEL=""
 
+  # Gemini 4 codename: Gemini 4 Carbon/Argon/Hydrogen/...
+  if [[ "$base" =~ ^Gemini[[:space:]]+4[[:space:]]+(Carbon|Argon|Hydrogen|Neon|Xenon|Krypton)([[:space:]].*)?$ ]]; then
+    codename="${BASH_REMATCH[1]}"
+    SHORT_MODEL="G4${codename:0:1}${eff}"
   # Gemini pattern: Gemini X.Y Flash/Pro/Lite
-  if [[ "$base" =~ ^Gemini[[:space:]]+([0-9\.]+)[[:space:]]*(Flash|Pro|Lite)? ]]; then
+  elif [[ "$base" =~ ^Gemini[[:space:]]+([0-9\.]+)[[:space:]]*(Flash|Pro|Lite)? ]]; then
     ver="${BASH_REMATCH[1]}"
     tier="${BASH_REMATCH[2]:-}"
     t_char=""
@@ -296,6 +301,12 @@ if [ -n "$MODEL" ]; then
     else
       SHORT_MODEL="C${ver}${eff}"
     fi
+  # GPT pattern: GPT-OSS NNNb / GPT-4o / GPT-4 Turbo etc
+  elif [[ "$base" =~ ^GPT-OSS[[:space:]]+([0-9]+[Bb]) ]]; then
+    size="${BASH_REMATCH[1]^^}"
+    SHORT_MODEL="GPT ${size}"
+  elif [[ "$base" =~ ^GPT-([^[:space:]]+)([[:space:]].*)?$ ]]; then
+    SHORT_MODEL="GPT-${BASH_REMATCH[1]}${eff}"
   else
     SHORT_MODEL="${base}${eff}"
   fi
