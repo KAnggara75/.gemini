@@ -229,28 +229,68 @@ if [ -n "$NAME_TO_SHOW" ]; then
   C="${FG_GRAY} ╱ ${FG_BRIGHT_CYAN}💬 ${CONV_DISPLAY}${R}"
 fi
 
-# ─── VCS / Git Status (Color-coded status: Green=Clean, Yellow/Red=Dirty) ───
+# ─── VCS / Git Status (Color: Green=Clean, Yellow=Dirty; Dynamic State Icons) ───
 V=""
-if [ -z "$VCS_BRANCH" ] && [ -n "$WS_DIR" ] && [ -d "$WS_DIR" ]; then
+VCS_AHEAD=0
+VCS_BEHIND=0
+
+if [ -n "$WS_DIR" ] && [ -d "$WS_DIR" ]; then
   if git -C "$WS_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    VCS_BRANCH=$(git -C "$WS_DIR" branch --show-current 2>/dev/null || true)
-    if [ -z "$VCS_BRANCH" ]; then
+    while IFS= read -r line; do
+      if [[ "$line" =~ ^#[[:space:]]branch\.head[[:space:]]+(.*)$ ]]; then
+        VCS_BRANCH="${BASH_REMATCH[1]}"
+      elif [[ "$line" =~ ^#[[:space:]]branch\.ab[[:space:]]+\+([0-9]+)[[:space:]]+\-([0-9]+) ]]; then
+        VCS_AHEAD="${BASH_REMATCH[1]}"
+        VCS_BEHIND="${BASH_REMATCH[2]}"
+      elif [[ ! "$line" =~ ^# ]]; then
+        VCS_DIRTY="true"
+      fi
+    done < <(git -C "$WS_DIR" status --porcelain=v2 --branch 2>/dev/null || true)
+
+    if [ "$VCS_BRANCH" = "(detached)" ] || [ -z "$VCS_BRANCH" ]; then
       VCS_BRANCH=$(git -C "$WS_DIR" rev-parse --short HEAD 2>/dev/null || true)
-    fi
-    if [ -n "$(git -C "$WS_DIR" status --porcelain 2>/dev/null)" ]; then
-      VCS_DIRTY="true"
-    else
-      VCS_DIRTY="false"
     fi
   fi
 fi
 
 if [ -n "$VCS_BRANCH" ]; then
+  # Color: Green jika clean, Yellow jika dirty
   if [ "$VCS_DIRTY" = "true" ]; then
-    V="${FG_GRAY} ╱ ${FG_BRIGHT_YELLOW} ${VCS_BRANCH}${R}"
+    VCS_COLOR="${FG_BRIGHT_YELLOW}"
   else
-    V="${FG_GRAY} ╱ ${FG_BRIGHT_GREEN} ${VCS_BRANCH}${R}"
+    VCS_COLOR="${FG_BRIGHT_GREEN}"
   fi
+
+  # Simbol dinamis berdasarkan state:
+  # - Diverged (belum push & perlu pull): ⇅ (atau ⇡X⇣Y)
+  # - Belum push (ahead): ⇡
+  # - Perlu pull (behind): ⇣
+  # - Dirty (belum commit): *
+  # - Clean & in sync: ✓
+  VCS_SYM=""
+  VCS_EXTRA=""
+
+  if [ "$VCS_AHEAD" -gt 0 ] && [ "$VCS_BEHIND" -gt 0 ]; then
+    VCS_SYM="⇅"
+    VCS_EXTRA=" +${VCS_AHEAD}-${VCS_BEHIND}"
+  elif [ "$VCS_AHEAD" -gt 0 ]; then
+    VCS_SYM="⇡"
+    [ "$VCS_AHEAD" -gt 1 ] && VCS_EXTRA="${VCS_AHEAD}"
+  elif [ "$VCS_BEHIND" -gt 0 ]; then
+    VCS_SYM="⇣"
+    [ "$VCS_BEHIND" -gt 1 ] && VCS_EXTRA="${VCS_BEHIND}"
+  elif [ "$VCS_DIRTY" = "true" ]; then
+    VCS_SYM="*"
+  else
+    VCS_SYM="✓"
+  fi
+
+  # Indikator tambahan jika dirty bersamaan dengan ahead/behind
+  if [ "$VCS_DIRTY" = "true" ] && { [ "$VCS_AHEAD" -gt 0 ] || [ "$VCS_BEHIND" -gt 0 ]; }; then
+    VCS_EXTRA="${VCS_EXTRA}*"
+  fi
+
+  V="${FG_GRAY} ╱ ${VCS_COLOR}${VCS_SYM} ${VCS_BRANCH}${VCS_EXTRA}${R}"
 fi
 
 # ─── Model ───────────────────────────────────────────────────────────────────
