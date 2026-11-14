@@ -265,3 +265,23 @@ Dokumen ini mencatat keputusan-keputusan arsitektur penting yang diambil dalam p
   2. Mengganti format tampilan menjadi teks minimalis `ctx: <PCT>%` (contoh: `ctx: 16.2% (32.4k/200.0k)`).
   3. Mempertahankan pewarnaan dinamis berbasis ambang batas persentase (hijau `< 60%`, kuning `60-84%`, merah `≥ 85%`) langsung pada teks angka persentase.
 - **Consequences**: Statusline menjadi lebih ramping, menghemat ruang horizontal terminal, mengurangi overhead pemrosesan string perulangan bash, dan tetap mempertahankan sinyal peringatan visual lewat warna angka.
+
+---
+
+## ADR-022: Indikator Status Git Dinamis Berbasis Simbol State dan Pewarnaan Statusline
+
+- **Status**: Accepted
+- **Date**: 2026-11-14
+- **Source**: Developer request
+- **Context**: Status Git di baris statusline terminal sebelumnya hanya menggunakan simbol statis ` <branch>` dengan warna kuning saat dirty dan hijau saat clean, tanpa informasi apakah commit lokal sudah di-push (*ahead*), perlu pull (*behind*), atau diverged dari remote. Selain itu, formatting sebelumnya sempat menempelkan angka delta commit langsung ke nama branch (misal: `main17*`), yang membingungkan identitas nama branch.
+- **Decision**: 
+  1. Menggunakan parser `git status --porcelain=v2 --branch` pada [`antigravity-cli/statusline.sh`](../antigravity-cli/statusline.sh) untuk mendeteksi `branch.head`, `branch.ab` (`+ahead -behind`), dan status dirty secara atomik dan efisien.
+  2. Mengimplementasikan pemetaan simbol status dinamis:
+     - `✓ <branch>` : Status *clean* dan sinkron penuh dengan remote branch.
+     - `* <branch>` : Terdapat perubahan lokal yang belum di-commit (*dirty*).
+     - `⇡ <branch> [+N]` : Terdapat $N$ commit lokal yang belum di-push ke remote (*ahead*).
+     - `⇣ <branch> [-N]` : Remote memiliki $N$ commit baru yang belum di-pull (*behind*).
+     - `⇅ <branch> +N-M` : Kondisi *diverged* (kombinasi ahead dan behind).
+  3. Memisahkan angka kuantitas commit dan penanda dirty dengan spasi yang jelas (contoh: `⇡ main +17 *` alih-alih `main17*`).
+  4. Pewarnaan teks branch: Hijau terang (`FG_BRIGHT_GREEN`) jika bersih/clean, dan Kuning terang (`FG_BRIGHT_YELLOW`) jika terdapat perubahan dirty.
+- **Consequences**: Developer dapat langsung mengetahui status sinkronisasi Git secara instan sekilas pandang dari statusline tanpa perlu menjalankan `git status` secara manual.

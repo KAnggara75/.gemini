@@ -275,10 +275,10 @@ if [ -n "$VCS_BRANCH" ]; then
     VCS_EXTRA=" +${VCS_AHEAD}-${VCS_BEHIND}"
   elif [ "$VCS_AHEAD" -gt 0 ]; then
     VCS_SYM="⇡"
-    [ "$VCS_AHEAD" -gt 1 ] && VCS_EXTRA="${VCS_AHEAD}"
+    [ "$VCS_AHEAD" -gt 1 ] && VCS_EXTRA=" +${VCS_AHEAD}"
   elif [ "$VCS_BEHIND" -gt 0 ]; then
     VCS_SYM="⇣"
-    [ "$VCS_BEHIND" -gt 1 ] && VCS_EXTRA="${VCS_BEHIND}"
+    [ "$VCS_BEHIND" -gt 1 ] && VCS_EXTRA=" -${VCS_BEHIND}"
   elif [ "$VCS_DIRTY" = "true" ]; then
     VCS_SYM="*"
   else
@@ -287,7 +287,7 @@ if [ -n "$VCS_BRANCH" ]; then
 
   # Indikator tambahan jika dirty bersamaan dengan ahead/behind
   if [ "$VCS_DIRTY" = "true" ] && { [ "$VCS_AHEAD" -gt 0 ] || [ "$VCS_BEHIND" -gt 0 ]; }; then
-    VCS_EXTRA="${VCS_EXTRA}*"
+    VCS_EXTRA="${VCS_EXTRA} *"
   fi
 
   V="${FG_GRAY} ╱ ${VCS_COLOR}${VCS_SYM} ${VCS_BRANCH}${VCS_EXTRA}${R}"
